@@ -71,26 +71,6 @@
   }
   .theme-btn:hover { border-color: var(--brass-light); }
 
-  .notice-banner {
-    background: rgba(169, 121, 60, 0.12);
-    border: 1px solid var(--brass-light);
-    border-radius: 12px;
-    padding: 14px 16px;
-    margin-bottom: 18px;
-    font-size: 13px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .notice-banner .banner-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-
   .block {
     border: 1px solid var(--line);
     border-radius: 14px;
@@ -146,6 +126,7 @@
     padding: 6px 14px;
     border-radius: 20px;
     border: 1px solid var(--line);
+    flex-wrap: wrap;
   }
 
   .dot-pulse {
@@ -157,10 +138,36 @@
     animation: pulse 1.8s infinite;
   }
 
+  .dot-pulse.connecting {
+    background: #f59e0b;
+    box-shadow: 0 0 8px #f59e0b;
+  }
+
   @keyframes pulse {
     0% { opacity: 0.4; transform: scale(0.9); }
     50% { opacity: 1; transform: scale(1.2); }
     100% { opacity: 0.4; transform: scale(0.9); }
+  }
+
+  .room-box {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .room-input {
+    max-width: 220px !important;
+    font-family: monospace;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+  }
+
+  .sync-time {
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-left: auto;
   }
 
   .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -311,11 +318,13 @@
 
     <div class="action-bar">
       <div class="status-pill" id="cloudStatus">
-        <div class="dot-pulse"></div>
-        <span>🟢 Tersambung (Auto-Sync)</span>
+        <div class="dot-pulse connecting"></div>
+        <span id="cloudStatusText">🟡 Menghubungkan Sync Cloud...</span>
+        <span class="sync-time" id="lastSyncTime">Belum sync</span>
       </div>
       
       <div class="btn-group">
+        <button type="button" class="btn" id="forceSyncBtn" title="Tarik data terbaru dari Cloud">🔄 Paksa Sync</button>
         <button type="button" class="btn" id="copyTextDataBtn" title="Salin seluruh teks nama">📋 Salin Teks Nama</button>
         <button type="button" class="btn solid" id="saveNamesBtn">💾 Simpan Perubahan</button>
       </div>
@@ -324,9 +333,16 @@
 
   <!-- Detail Pengaturan Block -->
   <div class="block">
-    <details>
-      <summary>⚙️ Pengaturan Alamat Undangan &amp; Pesan WA</summary>
+    <details open>
+      <summary>⚙️ Pengaturan Room Sync (HP ↔ Laptop) &amp; Alamat Undangan</summary>
       <div style="margin-top:14px;">
+        <label for="roomIdInput">Kode Room Sync (Gunakan kode yang sama di HP &amp; Laptop)</label>
+        <div class="room-box">
+          <input type="text" id="roomIdInput" class="room-input" value="tyafaki2026" spellcheck="false">
+          <button type="button" class="btn" id="copyRoomLinkBtn">📋 Salin Link Room Sync untuk HP</button>
+        </div>
+        <div class="hint" style="margin-bottom:18px;">📱 Buka link room ini di Browser HP Anda agar otomatis terhubung dengan Laptop.</div>
+
         <label for="base">Alamat Utama Undangan</label>
         <input type="text" id="base" spellcheck="false">
         <div class="hint" style="margin-bottom:16px;">Ubah jika domain utama undangan GitHub Pages diperbarui.</div>
@@ -401,10 +417,14 @@
       "Wassalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
       "Kami yang berbahagia,\nTya & Faki";
 
-    // Safe DOM elements retrieval
+    var CLIENT_ID = "client_" + Math.random().toString(36).substr(2, 9);
+
     var namesEl = document.getElementById("names");
     var saveNamesBtn = document.getElementById("saveNamesBtn");
     var copyTextDataBtn = document.getElementById("copyTextDataBtn");
+    var forceSyncBtn = document.getElementById("forceSyncBtn");
+    var copyRoomLinkBtn = document.getElementById("copyRoomLinkBtn");
+    var roomIdInput = document.getElementById("roomIdInput");
     var baseEl = document.getElementById("base");
     var tplEl = document.getElementById("tpl");
     var listEl = document.getElementById("list");
@@ -413,20 +433,31 @@
     var searchInput = document.getElementById("searchInput");
     var themeBtn = document.getElementById("themeBtn");
     var cloudStatus = document.getElementById("cloudStatus");
+    var cloudStatusText = document.getElementById("cloudStatusText");
+    var lastSyncTime = document.getElementById("lastSyncTime");
     var toastEl = document.getElementById("toast");
 
     var filter = "all";
     var sent = {};
     var isCloudActive = false;
     var docRef = null;
-    var unsubscribeListener = null;
-    var lastRemoteTimestamp = 0;
-    var currentRoomId = "tyafaki2026"; // Default Room ID for fixed GitHub Pages deployment
-    var syncInterval = null;
-    var isSyncing = false;
+    var unsubscribeFirestore = null;
+    var sseEventSource = null;
     var autoSyncDebounce = null;
+    
+    var urlParams = new URLSearchParams(window.location.search);
+    var initialRoom = urlParams.get("room") || load("tf_room_id", "tyafaki2026");
+    var currentRoomId = sanitizeRoomId(initialRoom);
 
-    var KV_BASE_URL1 = "https://kvdb.io/A8v5jRzXqY3mWp9kL2nT1s/";
+    function sanitizeRoomId(str) {
+      if (!str) return "tyafaki2026";
+      return str.toLowerCase().replace(/[^a-z0-9_-]/g, "").substring(0, 40) || "tyafaki2026";
+    }
+
+    if (roomIdInput) {
+      roomIdInput.value = currentRoomId;
+      save("tf_room_id", currentRoomId);
+    }
 
     function showToast(msg) {
       if (!toastEl) return;
@@ -457,98 +488,161 @@
 
     function saveSent(){ save("tf_sent", JSON.stringify(sent)); }
 
-    async function fetchKvData(roomId) {
-      try {
-        var res = await fetch(KV_BASE_URL1 + encodeURIComponent(roomId) + "?nocache=" + Date.now(), { cache: "no-store" });
-        if (res.ok) {
-          var text = await res.text();
-          if (text) return JSON.parse(text);
-        }
-      } catch(e) { console.warn("KV fetch error:", e); }
-      return null;
+    function updateSyncStatus(isLive, message) {
+      if (!cloudStatus) return;
+      var dot = cloudStatus.querySelector(".dot-pulse");
+      if (dot) {
+        dot.className = "dot-pulse" + (isLive ? "" : " connecting");
+      }
+      if (cloudStatusText) {
+        cloudStatusText.textContent = message || (isLive ? "🟢 Real-time Sync Aktif" : "🟡 Menghubungkan...");
+      }
+      if (lastSyncTime) {
+        var now = new Date();
+        lastSyncTime.textContent = now.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
     }
 
-    async function sendKvData(roomId, payload) {
+    var NTFY_BASE_URL = "https://ntfy.sh/";
+
+    function getNtfyTopic() {
+      return "tyafaki_invitation_sync_v4_" + currentRoomId;
+    }
+
+    async function publishCloudSyncPayload(payload) {
+      var topic = getNtfyTopic();
       try {
-        await fetch(KV_BASE_URL1 + encodeURIComponent(roomId), {
+        await fetch(NTFY_BASE_URL + topic, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-      } catch(e) { console.warn("KV send error:", e); }
-    }
-
-    async function pullAndSyncNow(isManual) {
-      if (isSyncing) return;
-      isSyncing = true;
-
-      try {
-        var remote = await fetchKvData(currentRoomId);
-        if (remote && remote.updatedAt) {
-          if (remote.updatedAt > lastRemoteTimestamp || isManual) {
-            lastRemoteTimestamp = remote.updatedAt;
-            var hasChanged = false;
-
-            if (remote.namesText !== undefined) {
-              var formattedRemote = formatNamesText(remote.namesText);
-              var formattedLocal = namesEl ? namesEl.value : "";
-              if (formattedRemote !== formattedLocal && document.activeElement !== namesEl) {
-                if (namesEl) namesEl.value = formattedRemote;
-                save("tf_names", formattedRemote);
-                hasChanged = true;
-              }
-            }
-
-            if (remote.sent) {
-              sent = Object.assign({}, sent, remote.sent);
-              saveSent();
-              hasChanged = true;
-            }
-
-            if (hasChanged || isManual) {
-              render();
-            }
-          }
-        }
-
-        if (cloudStatus) {
-          var totalCount = namesEl ? namesEl.value.split("\n").filter(Boolean).length : 0;
-          cloudStatus.innerHTML = '<div class="dot-pulse"></div><span>🟢 Sync Aktif (' + totalCount + ' Tamu)</span>';
-        }
-      } catch(e) {
-        console.warn("Sync error:", e);
-      } finally {
-        isSyncing = false;
+      } catch (err) {
+        console.warn("ntfy publish warning:", err);
       }
-    }
-
-    function syncToCloud(newNamesText, updatedSent) {
-      lastRemoteTimestamp = Date.now();
-      var payload = {
-        namesText: newNamesText,
-        sent: updatedSent || sent,
-        updatedAt: lastRemoteTimestamp,
-        roomId: currentRoomId
-      };
-
-      sendKvData(currentRoomId, payload);
 
       if (isCloudActive && docRef) {
         setDoc(docRef, payload, { merge: true }).catch(function(err){
-          console.warn("Firestore fallback:", err);
+          console.warn("Firestore sync error:", err);
         });
       }
     }
 
-    function startAutoSync() {
-      if (syncInterval) clearInterval(syncInterval);
-      pullAndSyncNow(true);
-      syncInterval = setInterval(function(){
-        pullAndSyncNow(false);
-      }, 2500);
+    function applyRemotePayload(data, isManual) {
+      if (!data) return false;
+      if (data.senderId === CLIENT_ID && !isManual) return false;
+
+      var hasChanged = false;
+
+      if (data.namesText !== undefined) {
+        var formattedRemote = formatNamesText(data.namesText);
+        var formattedLocal = namesEl ? namesEl.value : "";
+        
+        if (formattedRemote !== formattedLocal) {
+          if (namesEl && document.activeElement !== namesEl) {
+            namesEl.value = formattedRemote;
+          }
+          save("tf_names", formattedRemote);
+          hasChanged = true;
+        }
+      }
+
+      if (data.sent) {
+        var localSentStr = JSON.stringify(sent);
+        var remoteSentStr = JSON.stringify(data.sent);
+        
+        if (localSentStr !== remoteSentStr) {
+          sent = Object.assign({}, data.sent);
+          saveSent();
+          hasChanged = true;
+        }
+      }
+
+      if (hasChanged || isManual) {
+        render();
+        updateSyncStatus(true, "🟢 Real-time Sync (Tersambung)");
+        return true;
+      }
+      return false;
     }
 
-    async function initCloudSync() {
+    async function pollLatestState(isManual) {
+      var topic = getNtfyTopic();
+      var polled = false;
+
+      try {
+        var res = await fetch(NTFY_BASE_URL + topic + "/json?poll=1&since=12h", { cache: "no-store" });
+        if (res.ok) {
+          var text = await res.text();
+          if (text) {
+            var lines = text.trim().split("\n");
+            var latestPayload = null;
+            
+            for (var i = lines.length - 1; i >= 0; i--) {
+              try {
+                var msg = JSON.parse(lines[i]);
+                if (msg && msg.message) {
+                  latestPayload = JSON.parse(msg.message);
+                  break; 
+                }
+              } catch(e){}
+            }
+            
+            if (latestPayload) {
+              if (applyRemotePayload(latestPayload, isManual)) {
+                polled = true;
+              }
+            }
+          }
+        }
+      } catch(e) {
+        console.warn("Ntfy poll warning:", e);
+      }
+
+      if (isManual && polled) {
+        showToast("🔄 Data terbaru berhasil ditarik dari Cloud!");
+      } else if (isManual) {
+        showToast("👍 Data sudah paling up-to-date.");
+      }
+    }
+
+    function setupSseListener() {
+      if (sseEventSource) {
+        sseEventSource.close();
+        sseEventSource = null;
+      }
+
+      var topic = getNtfyTopic();
+      try {
+        sseEventSource = new EventSource(NTFY_BASE_URL + topic + "/sse");
+        
+        sseEventSource.onopen = function() {
+          updateSyncStatus(true, "🟢 Real-time Sync (Tersambung)");
+        };
+
+        sseEventSource.onmessage = function(e) {
+          try {
+            var msg = JSON.parse(e.data);
+            if (msg && msg.message) {
+              var payload = JSON.parse(msg.message);
+              if (applyRemotePayload(payload, false)) {
+                showToast("⚡ Tamu tersinkron dari perangkat lain!");
+              }
+            }
+          } catch(err) {
+            console.warn("SSE parse error:", err);
+          }
+        };
+
+        sseEventSource.onerror = function() {
+          updateSyncStatus(false, "🟡 Menghubungkan ulang...");
+        };
+      } catch(e) {
+        console.warn("SSE init error:", e);
+      }
+    }
+
+    async function initFirestoreIfAvailable() {
       try {
         if (typeof __firebase_config !== 'undefined' && __firebase_config) {
           var firebaseConfig = JSON.parse(__firebase_config);
@@ -565,55 +659,52 @@
           }
 
           if (userCred && userCred.user) {
-            if (unsubscribeListener) unsubscribeListener();
+            if (unsubscribeFirestore) unsubscribeFirestore();
 
             docRef = doc(db, 'artifacts', appId, 'public', 'data', 'guests', currentRoomId);
             isCloudActive = true;
 
-            unsubscribeListener = onSnapshot(docRef, function(snapshot) {
+            unsubscribeFirestore = onSnapshot(docRef, function(snapshot) {
               if (snapshot.exists()) {
-                var data = snapshot.data();
-                if (data.updatedAt && data.updatedAt > lastRemoteTimestamp) {
-                  lastRemoteTimestamp = data.updatedAt;
-                  var hasChanged = false;
-
-                  if (data.namesText !== undefined && (!namesEl || document.activeElement !== namesEl)) {
-                    var formatted = formatNamesText(data.namesText);
-                    if (namesEl && namesEl.value !== formatted) {
-                      namesEl.value = formatted;
-                      save("tf_names", formatted);
-                      hasChanged = true;
-                    }
-                  }
-
-                  if (data.sent) {
-                    sent = Object.assign({}, sent, data.sent);
-                    saveSent();
-                    hasChanged = true;
-                  }
-
-                  if (hasChanged) {
-                    render();
-                  }
-                }
+                applyRemotePayload(snapshot.data(), false);
               }
             }, function(error) {
-              console.warn("Firestore listener warning:", error);
+              console.warn("Firestore snapshot listener:", error);
             });
           }
         }
       } catch(e) {
-        console.warn("Firebase optional init fallback:", e);
+        console.warn("Firebase optional setup fallback:", e);
       }
-
-      startAutoSync();
     }
 
-    initCloudSync();
+    function initSyncEngine() {
+      setupSseListener();
+      pollLatestState(false);
+      initFirestoreIfAvailable();
+
+      setInterval(function() {
+         pollLatestState(false);
+      }, 15000);
+    }
+
+    initSyncEngine();
+
+    function triggerSync(namesText, updatedSent) {
+      var payload = {
+        namesText: namesText,
+        sent: updatedSent || sent,
+        roomId: currentRoomId,
+        senderId: CLIENT_ID
+      };
+
+      publishCloudSyncPayload(payload);
+      updateSyncStatus(true, "🟢 Tersinkron Real-time");
+    }
 
     document.addEventListener("visibilitychange", function(){
       if (document.visibilityState === "visible") {
-        pullAndSyncNow(true);
+        pollLatestState(true);
       }
     });
 
@@ -648,15 +739,41 @@
       document.body.removeChild(ta);
     }
 
+    if (roomIdInput) {
+      roomIdInput.addEventListener("change", function(){
+        var newRoom = sanitizeRoomId(roomIdInput.value);
+        currentRoomId = newRoom;
+        roomIdInput.value = newRoom;
+        save("tf_room_id", newRoom);
+        initSyncEngine();
+        showToast("🔑 Room Sync diubah ke: " + newRoom);
+      });
+    }
+
+    if (copyRoomLinkBtn) {
+      copyRoomLinkBtn.addEventListener("click", function(){
+        var cleanUrl = window.location.href.split("?")[0];
+        var roomUrl = cleanUrl + "?room=" + encodeURIComponent(currentRoomId);
+        copyText(roomUrl, copyRoomLinkBtn, "📋 Salin Link Room Sync untuk HP");
+        showToast("🔗 Link Room Sync disalin! Kirim ke HP & buka di browser HP.");
+      });
+    }
+
+    if (forceSyncBtn) {
+      forceSyncBtn.addEventListener("click", function(){
+        pollLatestState(true);
+      });
+    }
+
     if (saveNamesBtn) {
       saveNamesBtn.addEventListener("click", function(){
         if (!namesEl) return;
         var formatted = formatNamesText(namesEl.value);
         namesEl.value = formatted;
         save("tf_names", formatted);
-        syncToCloud(formatted, sent);
+        triggerSync(formatted, sent);
 
-        showToast("💾 Perubahan berhasil disimpan!");
+        showToast("💾 Perubahan disimpan & tersinkron ke Cloud!");
         render();
       });
     }
@@ -670,7 +787,6 @@
       });
     }
 
-    // Auto-sync debounced typing event
     if (namesEl) {
       namesEl.addEventListener("input", function(){
         save("tf_names", namesEl.value);
@@ -678,8 +794,8 @@
 
         clearTimeout(autoSyncDebounce);
         autoSyncDebounce = setTimeout(function(){
-          syncToCloud(namesEl.value, sent);
-        }, 600);
+          triggerSync(namesEl.value, sent);
+        }, 500);
       });
     }
 
@@ -784,7 +900,7 @@
         cb.addEventListener("change", function(){
           if (cb.checked) sent[name] = Date.now(); else delete sent[name];
           saveSent();
-          syncToCloud(namesEl ? namesEl.value : "", sent);
+          triggerSync(namesEl ? namesEl.value : "", sent);
           render();
         });
         tag.appendChild(cb);
@@ -809,7 +925,7 @@
         wa.addEventListener("click", function(){
           sent[name] = Date.now();
           saveSent();
-          syncToCloud(namesEl ? namesEl.value : "", sent);
+          triggerSync(namesEl ? namesEl.value : "", sent);
           setTimeout(render, 400);
         });
 
@@ -826,8 +942,8 @@
           delete sent[name];
           save("tf_names", updatedList);
           saveSent();
-          syncToCloud(updatedList, sent);
-          showToast("🗑️ " + name + " berhasil dihapus.");
+          triggerSync(updatedList, sent);
+          showToast("🗑 " + name + " berhasil dihapus.");
           render();
         });
 
