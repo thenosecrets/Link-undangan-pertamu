@@ -25,6 +25,10 @@
   .label-row label{margin:0}
   .count-badge{font-size:12.5px;color:var(--brass-light);background:rgba(169,121,60,.12);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-weight:500;white-space:nowrap}
   .hint{color:var(--muted);font-size:12.5px;margin-top:6px}
+  .autosave-row{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:10px;flex-wrap:wrap}
+  .autosave-hint{color:var(--muted);font-size:12.5px;flex:1;min-width:200px}
+  .autosave-status{font-size:12.5px;color:var(--success);font-weight:500;opacity:0;transition:opacity .3s;white-space:nowrap}
+  .autosave-status.show{opacity:1}
   input[type=text],textarea{width:100%;background:var(--field);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font:inherit;font-weight:300;transition:border-color .2s}
   textarea{resize:vertical}
   #names{min-height:170px;font-family:monospace;font-size:14px}
@@ -87,7 +91,10 @@
       <span class="count-badge" id="namesCount">0 nama</span>
     </div>
     <textarea id="names" placeholder="Ketik nama tamu lalu tekan Enter. Nomor akan muncul otomatis.&#10;&#10;Contoh:&#10;Desy Elfina [Enter]&#10;Desy Safitri [Enter]" spellcheck="false"></textarea>
-    <div class="hint">💡 Tekan <b>Enter</b> setelah nama → nomor otomatis muncul di baris berikutnya.</div>
+    <div class="autosave-row">
+      <div class="autosave-hint">💡 Tekan <b>Enter</b> setelah nama → nomor otomatis muncul. Data tersimpan otomatis.</div>
+      <div class="autosave-status" id="autosaveStatus">✓ Tersimpan</div>
+    </div>
 
     <div class="action-bar">
       <div class="status-pill" id="cloudStatus">
@@ -167,7 +174,8 @@
     "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.\n\n" +
     "Wassalamu'alaikum Warahmatullahi Wabarakatuh\n\nKami yang berbahagia,\nTya & Faki";
 
-  var SYNC_DEBOUNCE_MS = 1200;
+  var SYNC_DEBOUNCE_MS = 800;
+  var SYNC_MAX_WAIT_MS = 4000;
   var POLL_INTERVAL_MS = 15000;
   var CLIENT_ID = "c-" + Math.random().toString(36).slice(2, 10);
 
@@ -180,9 +188,10 @@
       searchInput=document.getElementById("searchInput"), themeBtn=document.getElementById("themeBtn"),
       cloudStatus=document.getElementById("cloudStatus"), cloudStatusText=document.getElementById("cloudStatusText"),
       lastSyncTime=document.getElementById("lastSyncTime"), toastEl=document.getElementById("toast"),
-      namesCountEl=document.getElementById("namesCount");
+      namesCountEl=document.getElementById("namesCount"), autosaveStatusEl=document.getElementById("autosaveStatus");
 
-  var filter="all", sent={}, autoSyncDebounce=null;
+  var filter="all", sent={};
+  var autoSyncDebounce=null, autoSyncMaxWait=null;
   var sseSource=null, pollTimer=null;
   var isLive=false;
   var localUpdatedAt=0;
@@ -194,6 +203,20 @@
   function save(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
   function showToast(m){ if(!toastEl)return; toastEl.textContent=m; toastEl.classList.add("show");
     clearTimeout(showToast._t); showToast._t=setTimeout(function(){toastEl.classList.remove("show");},2600); }
+
+  // Feedback visual bahwa data sudah tersimpan
+  var autosaveHideTimer=null;
+  function showAutosaveIndicator(){
+    if(!autosaveStatusEl) return;
+    var t = new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    autosaveStatusEl.textContent = "✓ Tersimpan " + t;
+    autosaveStatusEl.classList.add("show");
+    clearTimeout(autosaveHideTimer);
+    autosaveHideTimer = setTimeout(function(){
+      autosaveStatusEl.classList.remove("show");
+    }, 2000);
+  }
+
   function sentKey(n){ return String(n||"").toLowerCase(); }
 
   function stripNumber(line){
@@ -266,13 +289,10 @@
 
   function sanitizeRoomId(s){ if(!s)return ""; return s.toLowerCase().replace(/[^a-z0-9_-]/g,"").substring(0,40); }
 
-  // ====== COUNTER NAMA ======
   function updateNamesCount(){
     if(!namesCountEl) return;
     var clean = formatNamesText(namesEl ? namesEl.value : "");
     var total = clean ? clean.split("\n").length : 0;
-
-    // Hitung duplikat (case-insensitive)
     var seen = {}, dup = 0;
     if(clean){
       clean.split("\n").forEach(function(n){
@@ -281,7 +301,6 @@
         else seen[k] = true;
       });
     }
-
     var unique = total - dup;
     if(total === 0){
       namesCountEl.textContent = "0 nama";
@@ -363,6 +382,31 @@
     }
   }
 
+  // ====== AUTOSAVE: debounce + max-wait ======
+  function scheduleSave(){
+    // Simpan ke localStorage segera (sinkron)
+    save("tf_names", formatNamesText(namesEl ? namesEl.value : ""));
+    showAutosaveIndicator();
+
+    // Debounce publish
+    clearTimeout(autoSyncDebounce);
+    autoSyncDebounce = setTimeout(function(){
+      clearTimeout(autoSyncMaxWait);
+      autoSyncMaxWait = null;
+      publishState();
+    }, SYNC_DEBOUNCE_MS);
+
+    // Max-wait: kalau user terus ngetik, publish tetap jalan tiap 4 detik
+    if(!autoSyncMaxWait){
+      autoSyncMaxWait = setTimeout(function(){
+        clearTimeout(autoSyncDebounce);
+        autoSyncDebounce = null;
+        autoSyncMaxWait = null;
+        publishState();
+      }, SYNC_MAX_WAIT_MS);
+    }
+  }
+
   function applyRemote(data, isManual){
     if(!data || typeof data !== "object") return false;
     if(!isManual && data.senderId === CLIENT_ID) return false;
@@ -404,6 +448,7 @@
 
     if(hasChanged){
       render();
+      updateNamesCount();
       updateSyncStatus(true, "🟢 Real-time Sync (Tersambung)");
     }
     return hasChanged;
@@ -537,8 +582,10 @@
     save("tf_names", clean);
     namesEl.value = formatForDisplay(clean);
     publishState();
+    showAutosaveIndicator();
     showToast("✨ Format dirapikan & tersinkron!");
     render();
+    updateNamesCount();
   });
 
   if(copyTextDataBtn) copyTextDataBtn.addEventListener("click", function(){
@@ -582,20 +629,16 @@
     namesEl.addEventListener("paste", function(){
       setTimeout(function(){
         renumberTextarea(true);
-        save("tf_names", formatNamesText(namesEl.value));
+        scheduleSave();
         render();
         updateNamesCount();
-        clearTimeout(autoSyncDebounce);
-        autoSyncDebounce = setTimeout(publishState, SYNC_DEBOUNCE_MS);
       }, 30);
     });
 
     namesEl.addEventListener("input", function(){
-      save("tf_names", formatNamesText(namesEl.value));
+      scheduleSave();
       render();
       updateNamesCount();
-      clearTimeout(autoSyncDebounce);
-      autoSyncDebounce = setTimeout(publishState, SYNC_DEBOUNCE_MS);
     });
 
     namesEl.addEventListener("blur", function(){
@@ -767,6 +810,7 @@
         delete sent[key];
         saveSent();
         publishState();
+        showAutosaveIndicator();
         updateNamesCount();
         showToast("🗑 " + name + " dihapus.");
         render();
