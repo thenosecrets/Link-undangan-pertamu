@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Link Undangan per Tamu — Tya &amp; Faki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Jost:wght@300;400;500;600&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    --bg: #161512;
+    --panel: #1f1d19;
+    --line: rgba(169, 121, 60, 0.45);
+    --brass: #a9793c;
+    --brass-light: #c9a15c;
+    --cream: #f3ecd8;
+    --muted: rgba(243, 236, 216, 0.65);
+    --field: #24221d;
+    --danger: #ef4444;
+    --success: #10b981;
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f4f3ef;
+    --panel: #ffffff;
+    --line: rgba(169, 121, 60, 0.35);
+    --brass: #8d622a;
+    --brass-light: #a9793c;
+    --cream: #1f1d19;
+    --muted: rgba(31, 29, 25, 0.65);
+    --field: #faf8f5;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  
+  body {
+    background: var(--bg);
+    color: var(--cream);
+    font-family: "Jost", system-ui, -apple-system, sans-serif;
+    font-weight: 300;
+    font-size: 15px;
+    line-height: 1.55;
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 64px; }
+  
+  header { text-align: center; margin-bottom: 20px; position: relative; }
+  .script { font-family: "Mrs Saint Delafield", cursive; font-size: 52px; color: var(--brass-light); line-height: 1; }
+  h1 { font-family: "Fraunces", serif; font-weight: 400; font-size: 22px; margin: 4px 0 6px; letter-spacing: 0.3px; }
+  header p { margin: 0; color: var(--muted); font-size: 13.5px; }
+
+  .theme-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    color: var(--cream);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--brass-light); }
+
+  .notice-banner {
+    background: rgba(169, 121, 60, 0.12);
+    border: 1px solid var(--brass-light);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .notice-banner .banner-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .block {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: var(--panel);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  label { display: block; color: var(--brass-light); font-size: 14px; margin-bottom: 8px; font-weight: 500; }
+  .hint { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
+
+  input[type="text"], textarea {
+    width: 100%;
+    background: var(--field);
+    color: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 11px 14px;
+    font: inherit;
+    font-weight: 300;
+    transition: border-color 0.2s;
+  }
+
+  textarea { resize: vertical; }
+  #names { min-height: 170px; font-family: monospace, monospace; font-size: 14px; }
+  #tpl { min-height: 200px; font-size: 13.5px; }
+
+  input:focus-visible, textarea:focus-visible, button:focus-visible {
+    outline: 2px solid var(--brass-light);
+    outline-offset: 2px;
+  }
+
+  details summary { cursor: pointer; color: var(--brass-light); font-size: 14px; font-weight: 500; }
+  details[open] summary { margin-bottom: 14px; }
+
+  .action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 14px;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .status-pill {
+    font-size: 13px;
+    color: var(--brass-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(169, 121, 60, 0.1);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--line);
+  }
+
+  .dot-pulse {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 8px var(--success);
+    animation: pulse 1.8s infinite;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 0.4; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 0.4; transform: scale(0.9); }
+  }
+
+  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn {
+    border: 1px solid var(--brass);
+    background: transparent;
+    color: var(--brass-light);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .btn.solid { background: var(--brass); color: #ffffff; border-color: var(--brass); }
+  .btn.solid:hover { opacity: 0.92; transform: translateY(-1px); }
+  .btn.done { background: transparent; color: var(--cream); border-color: var(--cream); }
+
+  .btn-trash {
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.08);
+    color: var(--danger);
+    border-radius: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .btn-trash:hover {
+    background: var(--danger);
+    color: #ffffff;
+    border-color: var(--danger);
+  }
+
+  .count-bar { margin: 24px 0 14px; }
+  .count-title { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .count-title h2 { font-family: "Fraunces", serif; font-weight: 400; font-size: 19px; margin: 0; }
+  .count-title span { color: var(--muted); font-size: 13px; }
+
+  .progress-bg {
+    width: 100%;
+    height: 8px;
+    background: var(--field);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--brass-light);
+    transition: width 0.4s ease;
+  }
+
+  .search-box { margin-bottom: 14px; }
+
+  .filter { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter .btn[aria-pressed="true"] { background: var(--brass); color: #ffffff; }
+
+  .row {
+    border-top: 1px solid var(--line);
+    padding: 14px 4px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 12px;
+    align-items: center;
+    transition: background 0.2s;
+  }
+  .row:last-child { border-bottom: 1px solid var(--line); }
+
+  .row .nm { font-family: "Fraunces", serif; font-size: 17.5px; word-break: break-word; font-weight: 500; }
+  .row .url { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); word-break: break-all; font-family: monospace; }
+  .row .acts { display: flex; gap: 8px; grid-row: 1; grid-column: 2; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+  
+  .row.sent { opacity: 0.78; }
+  .row.sent .nm { color: var(--muted); text-decoration: line-through; }
+
+  .sent-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-left: 10px; font-family: "Jost", sans-serif; font-size: 12.5px;
+    color: var(--muted); cursor: pointer; user-select: none; vertical-align: middle;
+  }
+  .sent-tag input { accent-color: var(--brass); width: 16px; height: 16px; margin: 0; cursor: pointer; }
+  .row.sent .sent-tag { color: var(--brass-light); text-decoration: none; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1e293b;
+    color: #ffffff;
+    padding: 12px 22px;
+    border-radius: 30px;
+    font-size: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    border: 1px solid var(--brass-light);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 9999;
+    pointer-events: none;
+    text-align: center;
+    max-width: 90vw;
+  }
+
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  .empty { color: var(--muted); text-align: center; padding: 28px 0; }
+
+  @media (max-width: 520px) {
+    .row { grid-template-columns: 1fr; }
+    .row .acts { grid-row: auto; grid-column: 1; justify-content: flex-start; margin-top: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <button type="button" class="theme-btn" id="themeBtn" title="Ganti Tema Tampilan">☀ / 🌙</button>
+    <div class="script">Tya &amp; Faki</div>
+    <h1>Link Undangan per Tamu</h1>
+    <p>Nama otomatis diformat dengan garis bawah (<b>_</b>). Ketikan di HP langsung tersinkron ke Laptop secara otomatis.</p>
+  </header>
+
+  <!-- Input Daftar Nama Tamu Block -->
+  <div class="block">
+    <label for="names">Daftar Nama Tamu</label>
+    <textarea id="names" placeholder="Tulis nama tamu (satu per baris) contoh:&#10;Desy_Elfina&#10;Desy_Safitri&#10;FAKI&#10;Tes" spellcheck="false"></textarea>
+    <div class="hint">💡 Ketikan di HP/Laptop tersimpan &amp; tersinkronisasi otomatis secara real-time.</div>
+
+    <div class="action-bar">
+      <div class="status-pill" id="cloudStatus">
+        <div class="dot-pulse"></div>
+        <span>🟢 Tersambung (Auto-Sync)</span>
+      </div>
+      
+      <div class="btn-group">
+        <button type="button" class="btn" id="copyTextDataBtn" title="Salin seluruh teks nama">📋 Salin Teks Nama</button>
+        <button type="button" class="btn solid" id="saveNamesBtn">💾 Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Detail Pengaturan Block -->
+  <div class="block">
+    <details>
+      <summary>⚙️ Pengaturan Alamat Undangan &amp; Pesan WA</summary>
+      <div style="margin-top:14px;">
+        <label for="base">Alamat Utama Undangan</label>
+        <input type="text" id="base" spellcheck="false">
+        <div class="hint" style="margin-bottom:16px;">Ubah jika domain utama undangan GitHub Pages diperbarui.</div>
+
+        <label for="tpl">Format Pesan WhatsApp</label>
+        <textarea id="tpl" spellcheck="false"></textarea>
+        <div class="hint">Gunakan variabel <b>{nama}</b> untuk nama tamu, dan <b>{link}</b> untuk link undangan.</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- Progress Bar & Stats -->
+  <div class="count-bar">
+    <div class="count-title">
+      <h2>Daftar Link Undangan</h2>
+      <span id="total">0 dari 0 sudah dikirim (0%)</span>
+    </div>
+    <div class="progress-bg">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="search-box">
+    <input type="text" id="searchInput" placeholder="🔍 Cari nama tamu..." spellcheck="false">
+  </div>
+
+  <div class="filter" role="group" aria-label="Filter status undangan">
+    <button type="button" class="btn" data-f="all" aria-pressed="true">Semua</button>
+    <button type="button" class="btn" data-f="todo" aria-pressed="false">Belum Dikirim</button>
+    <button type="button" class="btn" data-f="sent" aria-pressed="false">Sudah Dikirim</button>
+  </div>
+
+  <!-- Guest List Output Container -->
+  <div id="list"></div>
+</div>
+
+<div id="toast" class="toast">Notifikasi</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+  (function(){
+    "use strict";
+
+    var DEFAULT_BASE = "https://thenosecrets.github.io/Undangan-Tya-Faki/";
+    var DEFAULT_NAMES = [
+      "Desy_Elfina",
+      "Desy_Safitri",
+      "Bernika",
+      "Ela",
+      "Nanda",
+      "Teguh",
+      "Yusuf",
+      "Silvy",
+      "Susmi",
+      "Nur_Fatimah",
+      "FAKI",
+      "Tes"
+    ].join("\n");
+
+    var DEFAULT_TPL =
+      "Assalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
+      "Kepada Yth.\nBapak/Ibu/Saudara/i {nama}\n\n" +
+      "Tanpa mengurangi rasa hormat, kami bermaksud mengundang Anda untuk hadir di acara pernikahan kami:\n\n" +
+      "Tya & Faki\n" +
+      "Jum'at, 27 November 2026\n\n" +
+      "Info lengkap mengenai acara dan lokasi dapat dilihat melalui link undangan berikut:\n{link}\n\n" +
+      "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.\n\n" +
+      "Wassalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
+      "Kami yang berbahagia,\nTya & Faki";
+
+    // Safe DOM elements retrieval
+    var namesEl = document.getElementById("names");
+    var saveNamesBtn = document.getElementById("saveNamesBtn");
+    var copyTextDataBtn = document.getElementById("copyTextDataBtn");
+    var baseEl = document.getElementById("base");
+    var tplEl = document.getElementById("tpl");
+    var listEl = document.getElementById("list");
+    var totalEl = document.getElementById("total");
+    var progressFill = document.getElementById("progressFill");
+    var searchInput = document.getElementById("searchInput");
+    var themeBtn = document.getElementById("themeBtn");
+    var cloudStatus = document.getElementById("cloudStatus");
+    var toastEl = document.getElementById("toast");
+
+    var filter = "all";
+    var sent = {};
+    var isCloudActive = false;
+    var docRef = null;
+    var unsubscribeListener = null;
+    var lastRemoteTimestamp = 0;
+    var currentRoomId = "tyafaki2026"; // Default Room ID for fixed GitHub Pages deployment
+    var syncInterval = null;
+    var isSyncing = false;
+    var autoSyncDebounce = null;
+
+    var KV_BASE_URL1 = "https://kvdb.io/A8v5jRzXqY3mWp9kL2nT1s/";
+
+    function showToast(msg) {
+      if (!toastEl) return;
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      setTimeout(function(){ toastEl.classList.remove("show"); }, 3000);
+    }
+
+    function load(key, fallback){
+      try { var v = localStorage.getItem(key); return v === null ? fallback : v; } catch(e) { return fallback; }
+    }
+    function save(key, val){
+      try { localStorage.setItem(key, val); } catch(e){}
+    }
+
+    function formatNamesText(text) {
+      if (!text) return "";
+      return text.split("\n").map(function(line) {
+        var clean = line.replace(/^\s*\d+[\.\)]\s*/, "").trim();
+        return clean ? clean.replace(/\s+/g, "_") : "";
+      }).filter(function(line) { return line.length > 0; }).join("\n");
+    }
+
+    if (namesEl) namesEl.value = formatNamesText(load("tf_names", DEFAULT_NAMES));
+    if (baseEl) baseEl.value = load("tf_base", DEFAULT_BASE);
+    if (tplEl) tplEl.value = load("tf_tpl", DEFAULT_TPL);
+    try { sent = JSON.parse(load("tf_sent", "{}")) || {}; } catch(e){ sent = {}; }
+
+    function saveSent(){ save("tf_sent", JSON.stringify(sent)); }
+
+    async function fetchKvData(roomId) {
+      try {
+        var res = await fetch(KV_BASE_URL1 + encodeURIComponent(roomId) + "?nocache=" + Date.now(), { cache: "no-store" });
+        if (res.ok) {
+          var text = await res.text();
+          if (text) return JSON.parse(text);
+        }
+      } catch(e) { console.warn("KV fetch error:", e); }
+      return null;
+    }
+
+    async function sendKvData(roomId, payload) {
+      try {
+        await fetch(KV_BASE_URL1 + encodeURIComponent(roomId), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+      } catch(e) { console.warn("KV send error:", e); }
+    }
+
+    async function pullAndSyncNow(isManual) {
+      if (isSyncing) return;
+      isSyncing = true;
+
+      try {
+        var remote = await fetchKvData(currentRoomId);
+        if (remote && remote.updatedAt) {
+          if (remote.updatedAt > lastRemoteTimestamp || isManual) {
+            lastRemoteTimestamp = remote.updatedAt;
+            var hasChanged = false;
+
+            if (remote.namesText !== undefined) {
+              var formattedRemote = formatNamesText(remote.namesText);
+              var formattedLocal = namesEl ? namesEl.value : "";
+              if (formattedRemote !== formattedLocal && document.activeElement !== namesEl) {
+                if (namesEl) namesEl.value = formattedRemote;
+                save("tf_names", formattedRemote);
+                hasChanged = true;
+              }
+            }
+
+            if (remote.sent) {
+              sent = Object.assign({}, sent, remote.sent);
+              saveSent();
+              hasChanged = true;
+            }
+
+            if (hasChanged || isManual) {
+              render();
+            }
+          }
+        }
+
+        if (cloudStatus) {
+          var totalCount = namesEl ? namesEl.value.split("\n").filter(Boolean).length : 0;
+          cloudStatus.innerHTML = '<div class="dot-pulse"></div><span>🟢 Sync Aktif (' + totalCount + ' Tamu)</span>';
+        }
+      } catch(e) {
+        console.warn("Sync error:", e);
+      } finally {
+        isSyncing = false;
+      }
+    }
+
+    function syncToCloud(newNamesText, updatedSent) {
+      lastRemoteTimestamp = Date.now();
+      var payload = {
+        namesText: newNamesText,
+        sent: updatedSent || sent,
+        updatedAt: lastRemoteTimestamp,
+        roomId: currentRoomId
+      };
+
+      sendKvData(currentRoomId, payload);
+
+      if (isCloudActive && docRef) {
+        setDoc(docRef, payload, { merge: true }).catch(function(err){
+          console.warn("Firestore fallback:", err);
+        });
+      }
+    }
+
+    function startAutoSync() {
+      if (syncInterval) clearInterval(syncInterval);
+      pullAndSyncNow(true);
+      syncInterval = setInterval(function(){
+        pullAndSyncNow(false);
+      }, 2500);
+    }
+
+    async function initCloudSync() {
+      try {
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          var firebaseConfig = JSON.parse(__firebase_config);
+          var appId = typeof __app_id !== 'undefined' ? __app_id : 'tya-faki-invitation';
+          var app = initializeApp(firebaseConfig);
+          var auth = getAuth(app);
+          var db = getFirestore(app);
+
+          var userCred = null;
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            userCred = await signInWithCustomToken(auth, __initial_auth_token);
+          } else {
+            userCred = await signInAnonymously(auth);
+          }
+
+          if (userCred && userCred.user) {
+            if (unsubscribeListener) unsubscribeListener();
+
+            docRef = doc(db, 'artifacts', appId, 'public', 'data', 'guests', currentRoomId);
+            isCloudActive = true;
+
+            unsubscribeListener = onSnapshot(docRef, function(snapshot) {
+              if (snapshot.exists()) {
+                var data = snapshot.data();
+                if (data.updatedAt && data.updatedAt > lastRemoteTimestamp) {
+                  lastRemoteTimestamp = data.updatedAt;
+                  var hasChanged = false;
+
+                  if (data.namesText !== undefined && (!namesEl || document.activeElement !== namesEl)) {
+                    var formatted = formatNamesText(data.namesText);
+                    if (namesEl && namesEl.value !== formatted) {
+                      namesEl.value = formatted;
+                      save("tf_names", formatted);
+                      hasChanged = true;
+                    }
+                  }
+
+                  if (data.sent) {
+                    sent = Object.assign({}, sent, data.sent);
+                    saveSent();
+                    hasChanged = true;
+                  }
+
+                  if (hasChanged) {
+                    render();
+                  }
+                }
+              }
+            }, function(error) {
+              console.warn("Firestore listener warning:", error);
+            });
+          }
+        }
+      } catch(e) {
+        console.warn("Firebase optional init fallback:", e);
+      }
+
+      startAutoSync();
+    }
+
+    initCloudSync();
+
+    document.addEventListener("visibilitychange", function(){
+      if (document.visibilityState === "visible") {
+        pullAndSyncNow(true);
+      }
+    });
+
+    function buildLink(name){
+      var base = (baseEl ? baseEl.value.trim() : "") || DEFAULT_BASE;
+      base = base.split("?")[0];
+      var enc = encodeURIComponent(name).replace(/%20/g, "_");
+      return base + "?to=" + enc;
+    }
+
+    function buildMessage(name, link){
+      var template = tplEl ? tplEl.value : DEFAULT_TPL;
+      return template.split("{nama}").join(name).split("{link}").join(link);
+    }
+
+    function copyText(text, btn, label){
+      var origText = label || "Salin";
+      function done(){
+        if (btn) {
+          btn.innerHTML = "✓ Tersalin";
+          btn.classList.add("done");
+          setTimeout(function(){ btn.innerHTML = origText; btn.classList.remove("done"); }, 1800);
+        }
+      }
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); done(); } catch(e) { window.prompt("Salin teks berikut:", text); }
+      document.body.removeChild(ta);
+    }
+
+    if (saveNamesBtn) {
+      saveNamesBtn.addEventListener("click", function(){
+        if (!namesEl) return;
+        var formatted = formatNamesText(namesEl.value);
+        namesEl.value = formatted;
+        save("tf_names", formatted);
+        syncToCloud(formatted, sent);
+
+        showToast("💾 Perubahan berhasil disimpan!");
+        render();
+      });
+    }
+
+    if (copyTextDataBtn) {
+      copyTextDataBtn.addEventListener("click", function(){
+        if (!namesEl) return;
+        var formatted = formatNamesText(namesEl.value);
+        copyText(formatted, copyTextDataBtn, "📋 Salin Teks Nama");
+        showToast("📋 Seluruh nama berhasil disalin!");
+      });
+    }
+
+    // Auto-sync debounced typing event
+    if (namesEl) {
+      namesEl.addEventListener("input", function(){
+        save("tf_names", namesEl.value);
+        render();
+
+        clearTimeout(autoSyncDebounce);
+        autoSyncDebounce = setTimeout(function(){
+          syncToCloud(namesEl.value, sent);
+        }, 600);
+      });
+    }
+
+    if (baseEl) baseEl.addEventListener("input", function(){ save("tf_base", baseEl.value); render(); });
+    if (tplEl) tplEl.addEventListener("input", function(){ save("tf_tpl", tplEl.value); render(); });
+    if (searchInput) searchInput.addEventListener("input", render);
+
+    if (themeBtn) {
+      var currentTheme = load("tf_theme", "dark");
+      document.documentElement.setAttribute("data-theme", currentTheme);
+      themeBtn.addEventListener("click", function(){
+        var next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+        document.documentElement.setAttribute("data-theme", next);
+        save("tf_theme", next);
+      });
+    }
+
+    document.querySelectorAll(".filter .btn").forEach(function(b){
+      b.addEventListener("click", function(){
+        filter = b.getAttribute("data-f");
+        document.querySelectorAll(".filter .btn").forEach(function(x){
+          x.setAttribute("aria-pressed", x === b ? "true" : "false");
+        });
+        render();
+      });
+    });
+
+    function render(){
+      if (!listEl) return;
+
+      var searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
+      var rawText = namesEl ? namesEl.value : "";
+      var rawLines = rawText.split("\n");
+
+      var names = rawLines
+        .map(function(n){ return n.trim().replace(/\s+/g, "_"); })
+        .filter(function(n){ return n.length > 0; });
+
+      var seen = {}, dupes = 0;
+      names = names.filter(function(n){
+        var k = n.toLowerCase();
+        if (seen[k]){ dupes++; return false; }
+        seen[k] = true;
+        return true;
+      });
+
+      listEl.innerHTML = "";
+
+      if (dupes){
+        var dn = document.createElement("div");
+        dn.className = "hint";
+        dn.style.marginBottom = "12px";
+        dn.style.color = "var(--brass-light)";
+        dn.textContent = "ℹ️ " + dupes + " nama ganda otomatis digabungkan.";
+        listEl.appendChild(dn);
+      }
+
+      var sentCount = names.filter(function(n){ return sent[n]; }).length;
+      var totalCount = names.length;
+      var percent = totalCount > 0 ? Math.round((sentCount / totalCount) * 100) : 0;
+
+      if (totalEl) totalEl.textContent = sentCount + " dari " + totalCount + " sudah dikirim (" + percent + "%)";
+      if (progressFill) progressFill.style.width = percent + "%";
+
+      if (!names.length){
+        var e = document.createElement("div");
+        e.className = "empty";
+        e.textContent = "Belum ada nama tamu. Tulis nama di atas lalu klik Simpan.";
+        listEl.appendChild(e);
+        return;
+      }
+
+      var shown = names.filter(function(n){
+        if (filter === "todo" && sent[n]) return false;
+        if (filter === "sent" && !sent[n]) return false;
+        if (searchQuery && n.toLowerCase().indexOf(searchQuery) === -1) return false;
+        return true;
+      });
+
+      if (!shown.length){
+        var e2 = document.createElement("div");
+        e2.className = "empty";
+        e2.textContent = "Tidak ada nama tamu yang sesuai dengan pencarian/filter.";
+        listEl.appendChild(e2);
+        return;
+      }
+
+      shown.forEach(function(name){
+        var link = buildLink(name);
+        var row = document.createElement("div");
+        row.className = "row" + (sent[name] ? " sent" : "");
+
+        var nm = document.createElement("div");
+        nm.className = "nm";
+        nm.textContent = name;
+
+        var tag = document.createElement("label");
+        tag.className = "sent-tag";
+        var cb = document.createElement("input");
+        cb.type = "checkbox";
+        cb.checked = !!sent[name];
+        cb.addEventListener("change", function(){
+          if (cb.checked) sent[name] = Date.now(); else delete sent[name];
+          saveSent();
+          syncToCloud(namesEl ? namesEl.value : "", sent);
+          render();
+        });
+        tag.appendChild(cb);
+        tag.appendChild(document.createTextNode(sent[name] ? "Sudah dikirim" : "Belum dikirim"));
+        nm.appendChild(tag);
+
+        var acts = document.createElement("div");
+        acts.className = "acts";
+
+        var copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "btn";
+        copyBtn.innerHTML = "📋 Salin Link";
+        copyBtn.addEventListener("click", function(){ copyText(link, copyBtn, "📋 Salin Link"); });
+
+        var wa = document.createElement("a");
+        wa.className = "btn solid";
+        wa.innerHTML = "💬 Kirim WA";
+        wa.target = "_blank";
+        wa.rel = "noopener";
+        wa.href = "https://wa.me/?text=" + encodeURIComponent(buildMessage(name, link));
+        wa.addEventListener("click", function(){
+          sent[name] = Date.now();
+          saveSent();
+          syncToCloud(namesEl ? namesEl.value : "", sent);
+          setTimeout(render, 400);
+        });
+
+        var delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "btn-trash";
+        delBtn.title = "Hapus " + name;
+        delBtn.innerHTML = '<svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>';
+        delBtn.addEventListener("click", function(){
+          if (!namesEl) return;
+          var currentNames = namesEl.value.split("\n").map(function(x){ return x.trim(); }).filter(function(x){ return x.length > 0; });
+          var updatedList = currentNames.filter(function(x){ return x !== name; }).join("\n");
+          namesEl.value = updatedList;
+          delete sent[name];
+          save("tf_names", updatedList);
+          saveSent();
+          syncToCloud(updatedList, sent);
+          showToast("🗑️ " + name + " berhasil dihapus.");
+          render();
+        });
+
+        acts.appendChild(copyBtn);
+        acts.appendChild(wa);
+        acts.appendChild(delBtn);
+
+        var url = document.createElement("div");
+        url.className = "url";
+        url.textContent = link;
+
+        row.appendChild(nm);
+        row.appendChild(acts);
+        row.appendChild(url);
+        listEl.appendChild(row);
+      });
+    }
+
+    render();
+  })();
+</script>
+</body>
+</html>
