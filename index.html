@@ -21,6 +21,9 @@
   .theme-btn:hover{border-color:var(--brass-light)}
   .block{border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:20px;background:var(--panel);box-shadow:0 4px 16px rgba(0,0,0,.08)}
   label{display:block;color:var(--brass-light);font-size:14px;margin-bottom:8px;font-weight:500}
+  .label-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+  .label-row label{margin:0}
+  .count-badge{font-size:12.5px;color:var(--brass-light);background:rgba(169,121,60,.12);border:1px solid var(--line);border-radius:999px;padding:3px 12px;font-weight:500;white-space:nowrap}
   .hint{color:var(--muted);font-size:12.5px;margin-top:6px}
   input[type=text],textarea{width:100%;background:var(--field);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font:inherit;font-weight:300;transition:border-color .2s}
   textarea{resize:vertical}
@@ -79,9 +82,12 @@
   </header>
 
   <div class="block">
-    <label for="names">Daftar Nama Tamu</label>
-    <textarea id="names" placeholder="Tulis nama tamu (satu per baris) contoh:&#10;Desy_Elfina&#10;Desy_Safitri&#10;Bernika&#10;Ela" spellcheck="false"></textarea>
-    <div class="hint">💡 Ketikan di HP/Laptop tersimpan &amp; tersinkronisasi otomatis.</div>
+    <div class="label-row">
+      <label for="names">Daftar Nama Tamu</label>
+      <span class="count-badge" id="namesCount">0 nama</span>
+    </div>
+    <textarea id="names" placeholder="Ketik nama tamu lalu tekan Enter. Nomor akan muncul otomatis.&#10;&#10;Contoh:&#10;Desy Elfina [Enter]&#10;Desy Safitri [Enter]" spellcheck="false"></textarea>
+    <div class="hint">💡 Tekan <b>Enter</b> setelah nama → nomor otomatis muncul di baris berikutnya.</div>
 
     <div class="action-bar">
       <div class="status-pill" id="cloudStatus">
@@ -92,7 +98,7 @@
       <div class="btn-group">
         <button type="button" class="btn" id="forceSyncBtn">🔄 Paksa Sync</button>
         <button type="button" class="btn" id="copyTextDataBtn">📋 Salin Teks Nama</button>
-        <button type="button" class="btn solid" id="saveNamesBtn">💾 Simpan Perubahan</button>
+        <button type="button" class="btn solid" id="saveNamesBtn">✨ Rapikan Format</button>
       </div>
     </div>
   </div>
@@ -165,7 +171,6 @@
   var POLL_INTERVAL_MS = 15000;
   var CLIENT_ID = "c-" + Math.random().toString(36).slice(2, 10);
 
-  // ====== DOM ======
   var namesEl=document.getElementById("names"), saveNamesBtn=document.getElementById("saveNamesBtn"),
       copyTextDataBtn=document.getElementById("copyTextDataBtn"), forceSyncBtn=document.getElementById("forceSyncBtn"),
       copyRoomLinkBtn=document.getElementById("copyRoomLinkBtn"),
@@ -174,9 +179,9 @@
       totalEl=document.getElementById("total"), progressFill=document.getElementById("progressFill"),
       searchInput=document.getElementById("searchInput"), themeBtn=document.getElementById("themeBtn"),
       cloudStatus=document.getElementById("cloudStatus"), cloudStatusText=document.getElementById("cloudStatusText"),
-      lastSyncTime=document.getElementById("lastSyncTime"), toastEl=document.getElementById("toast");
+      lastSyncTime=document.getElementById("lastSyncTime"), toastEl=document.getElementById("toast"),
+      namesCountEl=document.getElementById("namesCount");
 
-  // ====== STATE ======
   var filter="all", sent={}, autoSyncDebounce=null;
   var sseSource=null, pollTimer=null;
   var isLive=false;
@@ -185,27 +190,65 @@
   var lastRenderSig=null;
   var warnedLargePayload=false;
 
-  // ====== UTIL ======
   function load(k,f){ try{var v=localStorage.getItem(k);return v===null?f:v;}catch(e){return f;} }
   function save(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
   function showToast(m){ if(!toastEl)return; toastEl.textContent=m; toastEl.classList.add("show");
     clearTimeout(showToast._t); showToast._t=setTimeout(function(){toastEl.classList.remove("show");},2600); }
   function sentKey(n){ return String(n||"").toLowerCase(); }
 
+  function stripNumber(line){
+    return String(line||"").replace(/^\s*\d+[\.\)]\s*/, "").trim();
+  }
+
   function formatNamesText(t){
     if(!t) return "";
     return t.split("\n").map(function(l){
-      var c=l.replace(/^\s*\d+[\.\)]\s*/,"").trim();
-      return c ? c.replace(/\s+/g,"_") : "";
-    }).filter(function(l){ return l.length>0; }).join("\n");
+      var c = stripNumber(l);
+      return c ? c.replace(/\s+/g, "_") : "";
+    }).filter(function(l){ return l.length > 0; }).join("\n");
   }
 
-  // Signature stabil untuk membandingkan `sent` tanpa terpengaruh urutan key
+  function formatForDisplay(text){
+    var clean = formatNamesText(text);
+    if(!clean) return "";
+    return clean.split("\n").map(function(n, i){
+      return (i + 1) + ". " + n;
+    }).join("\n");
+  }
+
+  function renumberTextarea(preserveCursor){
+    if(!namesEl) return;
+    var pos = preserveCursor ? namesEl.selectionStart : null;
+    var oldVal = namesEl.value;
+    var lines = oldVal.split("\n");
+    var out = [];
+    var counter = 1;
+    for(var i = 0; i < lines.length; i++){
+      var content = stripNumber(lines[i]);
+      if(content){
+        out.push(counter + ". " + content);
+        counter++;
+      } else {
+        out.push("");
+      }
+    }
+    var newVal = out.join("\n");
+    if(newVal !== oldVal){
+      namesEl.value = newVal;
+      if(pos !== null){
+        var delta = newVal.length - oldVal.length;
+        var newPos = Math.max(0, Math.min(pos + delta, newVal.length));
+        try{
+          namesEl.selectionStart = namesEl.selectionEnd = newPos;
+        }catch(e){}
+      }
+    }
+  }
+
   function sentSignature(o){
     return Object.keys(o).sort().map(function(k){ return k+"="+o[k]; }).join("|");
   }
 
-  // FIX #6: merge tombstone-aware. Value 0 = unchecked, >0 = checked timestamp
   function mergeSent(local, remote){
     var merged = {};
     var seen = {};
@@ -223,6 +266,32 @@
 
   function sanitizeRoomId(s){ if(!s)return ""; return s.toLowerCase().replace(/[^a-z0-9_-]/g,"").substring(0,40); }
 
+  // ====== COUNTER NAMA ======
+  function updateNamesCount(){
+    if(!namesCountEl) return;
+    var clean = formatNamesText(namesEl ? namesEl.value : "");
+    var total = clean ? clean.split("\n").length : 0;
+
+    // Hitung duplikat (case-insensitive)
+    var seen = {}, dup = 0;
+    if(clean){
+      clean.split("\n").forEach(function(n){
+        var k = n.toLowerCase();
+        if(seen[k]) dup++;
+        else seen[k] = true;
+      });
+    }
+
+    var unique = total - dup;
+    if(total === 0){
+      namesCountEl.textContent = "0 nama";
+    } else if(dup > 0){
+      namesCountEl.textContent = unique + " nama (" + dup + " ganda)";
+    } else {
+      namesCountEl.textContent = total + " nama";
+    }
+  }
+
   // ====== INIT ROOM ======
   var urlParams = new URLSearchParams(location.search);
   var initialRoom = sanitizeRoomId(urlParams.get("room"))
@@ -233,7 +302,7 @@
   if(roomIdInput) roomIdInput.value = currentRoomId;
 
   // ====== LOAD LOCAL ======
-  if(namesEl) namesEl.value = formatNamesText(load("tf_names", DEFAULT_NAMES));
+  if(namesEl) namesEl.value = formatForDisplay(load("tf_names", DEFAULT_NAMES));
   if(baseEl) baseEl.value = load("tf_base", DEFAULT_BASE);
   if(tplEl) tplEl.value = load("tf_tpl", DEFAULT_TPL);
 
@@ -246,7 +315,6 @@
 
   function saveSent(){ save("tf_sent", JSON.stringify(sent)); }
 
-  // ====== STATUS ======
   function updateSyncStatus(live, msg){
     isLive = live;
     if(!cloudStatus) return;
@@ -260,7 +328,6 @@
 
   function getTopic(){ return TOPIC_PREFIX + currentRoomId; }
 
-  // ====== PAYLOAD ======
   function buildPayload(){
     return {
       namesText: formatNamesText(namesEl ? namesEl.value : ""),
@@ -270,12 +337,10 @@
     };
   }
 
-  // FIX #1: update timestamp hanya setelah publish sukses
   async function publishState(){
     var p = buildPayload();
     var body = JSON.stringify(p);
 
-    // FIX #4: cek ukuran payload
     if(body.length > MAX_PAYLOAD_BYTES && !warnedLargePayload){
       warnedLargePayload = true;
       showToast("⚠️ Daftar tamu besar (" + Math.round(body.length/1024) + "KB). Sync mungkin gagal.");
@@ -288,10 +353,7 @@
         body: body,
         keepalive: true
       });
-      // FIX #5: cek HTTP status
-      if(!res.ok){
-        throw new Error("HTTP " + res.status);
-      }
+      if(!res.ok) throw new Error("HTTP " + res.status);
       localUpdatedAt = p.updatedAt;
       save("tf_updated_at", String(localUpdatedAt));
       updateSyncStatus(true, "🟢 Tersinkron Real-time");
@@ -301,8 +363,6 @@
     }
   }
 
-  // ====== APPLY REMOTE ======
-  // FIX #3: return hanya true kalau ada perubahan
   function applyRemote(data, isManual){
     if(!data || typeof data !== "object") return false;
     if(!isManual && data.senderId === CLIENT_ID) return false;
@@ -313,14 +373,14 @@
     var hasChanged = false;
 
     if(typeof data.namesText === "string"){
-      var formatted = formatNamesText(data.namesText);
-      var currentVal = namesEl ? namesEl.value : "";
-      if(formatted !== currentVal){
+      var clean = formatNamesText(data.namesText);
+      var currentClean = formatNamesText(namesEl ? namesEl.value : "");
+      if(clean !== currentClean){
         var isFocused = false;
         try{ isFocused = namesEl && document.activeElement === namesEl; }catch(e){}
         if(!isFocused){
-          namesEl.value = formatted;
-          save("tf_names", formatted);
+          namesEl.value = formatForDisplay(clean);
+          save("tf_names", clean);
           hasChanged = true;
         }
       }
@@ -349,7 +409,6 @@
     return hasChanged;
   }
 
-  // ====== SSE ======
   function setupSse(){
     if(sseSource){ try{ sseSource.close(); }catch(e){} sseSource = null; }
     try{
@@ -372,8 +431,6 @@
     }catch(e){ console.warn("[SSE] init error", e); }
   }
 
-  // ====== POLL ======
-  // FIX #7: poll pertama 24h, selanjutnya 5m
   async function pollLatest(isManual){
     var since = firstPollDone ? "5m" : "24h";
     var polled = false;
@@ -404,7 +461,6 @@
     }
   }
 
-  // ====== SYNC ENGINE ======
   function startSync(){
     if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
     firstPollDone = false;
@@ -413,7 +469,6 @@
     pollTimer = setInterval(function(){ pollLatest(false); }, POLL_INTERVAL_MS);
   }
 
-  // ====== BUILD ======
   function buildLink(n){
     var b = (baseEl ? baseEl.value.trim() : "") || DEFAULT_BASE;
     b = b.split("?")[0];
@@ -424,7 +479,6 @@
     return t.split("{nama}").join(n).split("{link}").join(l);
   }
 
-  // ====== CLIPBOARD ======
   async function copyText(text, btn, label){
     var orig = label || "Salin";
     function done(){
@@ -456,7 +510,6 @@
   }
 
   // ====== EVENTS ======
-  // FIX #2: reset timestamp saat ganti room
   if(roomIdInput) roomIdInput.addEventListener("change", function(){
     var nr = sanitizeRoomId(roomIdInput.value) || "tyafaki2026";
     currentRoomId = nr;
@@ -480,34 +533,82 @@
 
   if(saveNamesBtn) saveNamesBtn.addEventListener("click", function(){
     if(!namesEl) return;
-    var f = formatNamesText(namesEl.value);
-    namesEl.value = f;
-    save("tf_names", f);
+    var clean = formatNamesText(namesEl.value);
+    save("tf_names", clean);
+    namesEl.value = formatForDisplay(clean);
     publishState();
-    showToast("💾 Disimpan & tersinkron!");
+    showToast("✨ Format dirapikan & tersinkron!");
     render();
   });
 
   if(copyTextDataBtn) copyTextDataBtn.addEventListener("click", function(){
     if(!namesEl) return;
     copyText(formatNamesText(namesEl.value), copyTextDataBtn, "📋 Salin Teks Nama");
-    showToast("📋 Nama disalin!");
+    showToast("📋 Nama disalin (tanpa nomor)!");
   });
 
+  // ====== NAMES TEXTAREA ======
   if(namesEl){
+    namesEl.addEventListener("keydown", function(e){
+      if(e.key !== "Enter" || e.shiftKey) return;
+      if(namesEl.selectionStart !== namesEl.selectionEnd) return;
+
+      var val = namesEl.value;
+      var pos = namesEl.selectionStart;
+      var beforeCursor = val.substring(0, pos);
+      var afterCursor = val.substring(pos);
+
+      var currentLine = beforeCursor.split("\n").pop();
+      var currentContent = stripNumber(currentLine);
+
+      if(currentContent.length > 0 && afterCursor.indexOf("\n") === -1){
+        e.preventDefault();
+        var lines = beforeCursor.split("\n");
+        var count = 0;
+        for(var i = 0; i < lines.length; i++){
+          if(stripNumber(lines[i]).length > 0) count++;
+        }
+        var nextNum = count + 1;
+        var insert = "\n" + nextNum + ". ";
+        namesEl.value = beforeCursor + insert + afterCursor;
+        var newPos = pos + insert.length;
+        try{
+          namesEl.selectionStart = namesEl.selectionEnd = newPos;
+        }catch(err){}
+        namesEl.dispatchEvent(new Event("input", {bubbles: true}));
+      }
+    });
+
+    namesEl.addEventListener("paste", function(){
+      setTimeout(function(){
+        renumberTextarea(true);
+        save("tf_names", formatNamesText(namesEl.value));
+        render();
+        updateNamesCount();
+        clearTimeout(autoSyncDebounce);
+        autoSyncDebounce = setTimeout(publishState, SYNC_DEBOUNCE_MS);
+      }, 30);
+    });
+
     namesEl.addEventListener("input", function(){
-      save("tf_names", namesEl.value);
+      save("tf_names", formatNamesText(namesEl.value));
       render();
+      updateNamesCount();
       clearTimeout(autoSyncDebounce);
       autoSyncDebounce = setTimeout(publishState, SYNC_DEBOUNCE_MS);
     });
+
     namesEl.addEventListener("blur", function(){
-      var f = formatNamesText(namesEl.value);
-      if(f !== namesEl.value){
-        namesEl.value = f;
-        save("tf_names", f);
+      var clean = formatNamesText(namesEl.value);
+      var display = formatForDisplay(clean);
+      if(display !== namesEl.value){
+        namesEl.value = display;
+        save("tf_names", clean);
         publishState();
         render();
+        updateNamesCount();
+      } else {
+        renumberTextarea(false);
       }
     });
   }
@@ -537,7 +638,6 @@
   });
 
   // ====== RENDER ======
-  // FIX #8: signature cache — skip render kalau input tidak berubah
   function render(){
     if(!listEl) return;
 
@@ -570,7 +670,6 @@
       listEl.appendChild(dn);
     }
 
-    // Progress — tombstone-aware: >0 = checked
     var sc = 0;
     names.forEach(function(n){ if(sent[sentKey(n)] > 0) sc++; });
     var tc = names.length;
@@ -586,7 +685,6 @@
       return;
     }
 
-    // Filter + search — tombstone-aware
     var shown = names.filter(function(n){
       var k = sentKey(n);
       var isSent = sent[k] > 0;
@@ -624,7 +722,6 @@
       cb.type = "checkbox";
       cb.checked = isSent;
       cb.addEventListener("change", function(){
-        // Tombstone: unchecked = 0, checked = timestamp
         sent[key] = cb.checked ? Date.now() : 0;
         saveSent();
         publishState();
@@ -665,11 +762,12 @@
         if(!namesEl) return;
         var curr = formatNamesText(namesEl.value).split("\n").filter(function(x){ return x.length > 0; });
         var upd = curr.filter(function(x){ return x !== name; }).join("\n");
-        namesEl.value = upd;
-        delete sent[key];
         save("tf_names", upd);
+        namesEl.value = formatForDisplay(upd);
+        delete sent[key];
         saveSent();
         publishState();
+        updateNamesCount();
         showToast("🗑 " + name + " dihapus.");
         render();
       });
@@ -691,8 +789,6 @@
     listEl.appendChild(frag);
   }
 
-  // ====== FLUSH ON HIDE ======
-  // FIX #1b: jangan update timestamp — biar device lain yang menang kalau beacon gagal
   function flushBeforeHide(){
     var p = buildPayload();
     var url = NTFY_BASE + getTopic();
@@ -724,6 +820,7 @@
 
   // ====== START ======
   render();
+  updateNamesCount();
   startSync();
 })();
 </script>
