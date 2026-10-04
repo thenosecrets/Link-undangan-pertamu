@@ -35,7 +35,7 @@
   .dot-pulse.connecting{background:#f59e0b;box-shadow:0 0 8px #f59e0b}
   @keyframes pulse{0%{opacity:.4;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}100%{opacity:.4;transform:scale(.9)}}
   .room-box{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
-  .room-input{max-width:260px !important;font-family:monospace;font-weight:bold;letter-spacing:.5px}
+  .room-input{max-width:220px !important;font-family:monospace;font-weight:bold;letter-spacing:.5px}
   .sync-time{font-size:11.5px;color:var(--muted);margin-left:auto}
   .btn-group{display:flex;gap:8px;flex-wrap:wrap}
   .btn{border:1px solid var(--brass);background:transparent;color:var(--brass-light);border-radius:999px;padding:8px 16px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
@@ -80,7 +80,7 @@
 
   <div class="block">
     <label for="names">Daftar Nama Tamu</label>
-    <textarea id="names" placeholder="Tulis nama tamu (satu per baris) contoh:&#10;Desy_Elfina&#10;Desy_Safitri&#10;FAKI&#10;Tes" spellcheck="false"></textarea>
+    <textarea id="names" placeholder="Tulis nama tamu (satu per baris) contoh:&#10;Desy_Elfina&#10;Desy_Safitri&#10;Bernika&#10;Ela" spellcheck="false"></textarea>
     <div class="hint">💡 Ketikan di HP/Laptop tersimpan &amp; tersinkronisasi otomatis.</div>
 
     <div class="action-bar">
@@ -99,15 +99,14 @@
 
   <div class="block">
     <details open>
-      <summary>⚙️ Pengaturan Room Sync (HP ↔ Laptop) &amp; Alamat Undangan</summary>
+      <summary>⚙️ Pengaturan Room Sync &amp; Alamat Undangan</summary>
       <div style="margin-top:14px">
         <label for="roomIdInput">Kode Room Sync (sama di HP &amp; Laptop)</label>
         <div class="room-box">
           <input type="text" id="roomIdInput" class="room-input" spellcheck="false">
           <button type="button" class="btn" id="copyRoomLinkBtn">📋 Salin Link untuk HP</button>
-          <button type="button" class="btn" id="newRoomBtn">✨ Buat Room Baru</button>
         </div>
-        <div class="hint" style="margin-bottom:18px">📱 Buka link di browser HP agar otomatis terhubung. 🔒 Kode room rahasia — siapa pun yang tahu bisa lihat/ubah daftar.</div>
+        <div class="hint" style="margin-bottom:18px">📱 Buka link di browser HP agar otomatis terhubung. 🔒 Kode room rahasia.</div>
 
         <label for="base">Alamat Utama Undangan</label>
         <input type="text" id="base" spellcheck="false">
@@ -143,16 +142,16 @@
 
 <div id="toast" class="toast">Notifikasi</div>
 
-<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
 <script>
 (function(){
   "use strict";
 
-  var MQTT_URL = "wss://broker.emqx.io:8084/mqtt";
-  var MQTT_PREFIX = "undangan-tya-faki-2026/";
+  var NTFY_BASE = "https://ntfy.sh/";
+  var TOPIC_PREFIX = "tyafaki_invitation_v5_";
+  var MAX_PAYLOAD_BYTES = 4000;
 
   var DEFAULT_BASE = "https://thenosecrets.github.io/Undangan-Tya-Faki/";
-  var DEFAULT_NAMES = ["Desy_Elfina","Desy_Safitri","Bernika","Ela","Nanda","Teguh","Yusuf","Silvy","Susmi","Nur_Fatimah","FAKI","Tes"].join("\n");
+  var DEFAULT_NAMES = ["Desy_Elfina","Desy_Safitri","Bernika","Ela","Nanda","Teguh","Yusuf","Silvy","Susmi","Nur_Fatimah"].join("\n");
   var DEFAULT_TPL =
     "Assalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
     "Kepada Yth.\nBapak/Ibu/Saudara/i {nama}\n\n" +
@@ -162,12 +161,14 @@
     "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.\n\n" +
     "Wassalamu'alaikum Warahmatullahi Wabarakatuh\n\nKami yang berbahagia,\nTya & Faki";
 
-  var MAX_NAMES_LEN = 200000;
-  var SYNC_DEBOUNCE_MS = 600;
+  var SYNC_DEBOUNCE_MS = 1200;
+  var POLL_INTERVAL_MS = 15000;
+  var CLIENT_ID = "c-" + Math.random().toString(36).slice(2, 10);
 
+  // ====== DOM ======
   var namesEl=document.getElementById("names"), saveNamesBtn=document.getElementById("saveNamesBtn"),
       copyTextDataBtn=document.getElementById("copyTextDataBtn"), forceSyncBtn=document.getElementById("forceSyncBtn"),
-      copyRoomLinkBtn=document.getElementById("copyRoomLinkBtn"), newRoomBtn=document.getElementById("newRoomBtn"),
+      copyRoomLinkBtn=document.getElementById("copyRoomLinkBtn"),
       roomIdInput=document.getElementById("roomIdInput"), baseEl=document.getElementById("base"),
       tplEl=document.getElementById("tpl"), listEl=document.getElementById("list"),
       totalEl=document.getElementById("total"), progressFill=document.getElementById("progressFill"),
@@ -175,81 +176,149 @@
       cloudStatus=document.getElementById("cloudStatus"), cloudStatusText=document.getElementById("cloudStatusText"),
       lastSyncTime=document.getElementById("lastSyncTime"), toastEl=document.getElementById("toast");
 
-  var filter="all", sent={}, mqttClient=null, autoSyncDebounce=null;
-  var localUpdatedAt=0, reconnectDelay=2000, isConnected=false;
+  // ====== STATE ======
+  var filter="all", sent={}, autoSyncDebounce=null;
+  var sseSource=null, pollTimer=null;
+  var isLive=false;
+  var localUpdatedAt=0;
+  var firstPollDone=false;
+  var lastRenderSig=null;
+  var warnedLargePayload=false;
 
+  // ====== UTIL ======
   function load(k,f){ try{var v=localStorage.getItem(k);return v===null?f:v;}catch(e){return f;} }
   function save(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
   function showToast(m){ if(!toastEl)return; toastEl.textContent=m; toastEl.classList.add("show");
     clearTimeout(showToast._t); showToast._t=setTimeout(function(){toastEl.classList.remove("show");},2600); }
   function sentKey(n){ return String(n||"").toLowerCase(); }
-  function formatNamesText(t){ if(!t)return ""; return t.split("\n").map(function(l){
-    var c=l.replace(/^\s*\d+[\.\)]\s*/,"").trim(); return c?c.replace(/\s+/g,"_"):"";
-  }).filter(function(l){return l.length>0;}).join("\n"); }
-  function sentSignature(o){ return Object.keys(o).sort().map(function(k){return k+"="+o[k];}).join("|"); }
-  function sanitizeRoomId(s){ if(!s)return ""; return s.toLowerCase().replace(/[^a-z0-9_-]/g,"").substring(0,40); }
-  function randomRoomId(){ return "room-"+Math.random().toString(36).slice(2,10); }
 
-  var urlParams=new URLSearchParams(location.search);
+  function formatNamesText(t){
+    if(!t) return "";
+    return t.split("\n").map(function(l){
+      var c=l.replace(/^\s*\d+[\.\)]\s*/,"").trim();
+      return c ? c.replace(/\s+/g,"_") : "";
+    }).filter(function(l){ return l.length>0; }).join("\n");
+  }
+
+  // Signature stabil untuk membandingkan `sent` tanpa terpengaruh urutan key
+  function sentSignature(o){
+    return Object.keys(o).sort().map(function(k){ return k+"="+o[k]; }).join("|");
+  }
+
+  // FIX #6: merge tombstone-aware. Value 0 = unchecked, >0 = checked timestamp
+  function mergeSent(local, remote){
+    var merged = {};
+    var seen = {};
+    [local, remote].forEach(function(src){
+      Object.keys(src).forEach(function(k){
+        if(seen[k]) return;
+        seen[k] = true;
+        var lv = local[k] || 0;
+        var rv = remote[k] || 0;
+        merged[k] = Math.max(lv, rv);
+      });
+    });
+    return merged;
+  }
+
+  function sanitizeRoomId(s){ if(!s)return ""; return s.toLowerCase().replace(/[^a-z0-9_-]/g,"").substring(0,40); }
+
+  // ====== INIT ROOM ======
+  var urlParams = new URLSearchParams(location.search);
   var initialRoom = sanitizeRoomId(urlParams.get("room"))
                  || sanitizeRoomId(load("tf_room_id",""))
-                 || randomRoomId();
+                 || "tyafaki2026";
   var currentRoomId = initialRoom;
   save("tf_room_id", currentRoomId);
   if(roomIdInput) roomIdInput.value = currentRoomId;
 
+  // ====== LOAD LOCAL ======
   if(namesEl) namesEl.value = formatNamesText(load("tf_names", DEFAULT_NAMES));
   if(baseEl) baseEl.value = load("tf_base", DEFAULT_BASE);
   if(tplEl) tplEl.value = load("tf_tpl", DEFAULT_TPL);
 
-  try{ var rs=JSON.parse(load("tf_sent","{}"))||{}; Object.keys(rs).forEach(function(k){sent[sentKey(k)]=rs[k];}); }catch(e){ sent={}; }
+  try{
+    var rs = JSON.parse(load("tf_sent","{}")) || {};
+    Object.keys(rs).forEach(function(k){ sent[sentKey(k)] = rs[k]; });
+  }catch(e){ sent = {}; }
+
   localUpdatedAt = parseInt(load("tf_updated_at","0"),10) || 0;
 
   function saveSent(){ save("tf_sent", JSON.stringify(sent)); }
 
-  function updateSyncStatus(live,msg){
-    if(!cloudStatus)return;
-    var d=cloudStatus.querySelector(".dot-pulse");
-    if(d) d.className="dot-pulse"+(live?"":" connecting");
-    if(cloudStatusText) cloudStatusText.textContent = msg || (live?"🟢 Tersambung":"🟡 Menghubungkan...");
-    if(lastSyncTime) lastSyncTime.textContent = new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  // ====== STATUS ======
+  function updateSyncStatus(live, msg){
+    isLive = live;
+    if(!cloudStatus) return;
+    var d = cloudStatus.querySelector(".dot-pulse");
+    if(d) d.className = "dot-pulse" + (live ? "" : " connecting");
+    if(cloudStatusText) cloudStatusText.textContent = msg || (live ? "🟢 Real-time Sync Aktif" : "🟡 Menghubungkan...");
+    if(lastSyncTime && live){
+      lastSyncTime.textContent = new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    }
   }
 
-  function getTopic(){ return MQTT_PREFIX + currentRoomId; }
+  function getTopic(){ return TOPIC_PREFIX + currentRoomId; }
 
+  // ====== PAYLOAD ======
   function buildPayload(){
     return {
-      namesText: formatNamesText(namesEl?namesEl.value:""),
+      namesText: formatNamesText(namesEl ? namesEl.value : ""),
       sent: sent,
       updatedAt: Date.now(),
       senderId: CLIENT_ID
     };
   }
 
-  var CLIENT_ID = "c-"+Math.random().toString(36).slice(2,10);
-
-  function publishState(){
-    if(!mqttClient || !isConnected) return;
+  // FIX #1: update timestamp hanya setelah publish sukses
+  async function publishState(){
     var p = buildPayload();
-    localUpdatedAt = p.updatedAt;
-    save("tf_updated_at", String(localUpdatedAt));
+    var body = JSON.stringify(p);
+
+    // FIX #4: cek ukuran payload
+    if(body.length > MAX_PAYLOAD_BYTES && !warnedLargePayload){
+      warnedLargePayload = true;
+      showToast("⚠️ Daftar tamu besar (" + Math.round(body.length/1024) + "KB). Sync mungkin gagal.");
+    }
+
     try{
-      mqttClient.publish(getTopic(), JSON.stringify(p), {qos:1, retain:true});
-    }catch(e){ console.warn("publish err", e); }
+      var res = await fetch(NTFY_BASE + getTopic(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: body,
+        keepalive: true
+      });
+      // FIX #5: cek HTTP status
+      if(!res.ok){
+        throw new Error("HTTP " + res.status);
+      }
+      localUpdatedAt = p.updatedAt;
+      save("tf_updated_at", String(localUpdatedAt));
+      updateSyncStatus(true, "🟢 Tersinkron Real-time");
+    }catch(e){
+      console.warn("[PUBLISH] error:", e && e.message);
+      updateSyncStatus(false, "🟡 Gagal kirim, akan dicoba lagi...");
+    }
   }
 
+  // ====== APPLY REMOTE ======
+  // FIX #3: return hanya true kalau ada perubahan
   function applyRemote(data, isManual){
-    if(!data || typeof data!=="object") return false;
-    // Konflik: hanya terapkan kalau lebih baru
+    if(!data || typeof data !== "object") return false;
+    if(!isManual && data.senderId === CLIENT_ID) return false;
+
     var remoteTs = parseInt(data.updatedAt,10) || 0;
     if(!isManual && remoteTs && remoteTs <= localUpdatedAt) return false;
 
     var hasChanged = false;
 
-    if(typeof data.namesText === "string" && data.namesText.length < MAX_NAMES_LEN){
+    if(typeof data.namesText === "string"){
       var formatted = formatNamesText(data.namesText);
-      if(formatted !== (namesEl?namesEl.value:"")){
-        if(namesEl && document.activeElement !== namesEl){
+      var currentVal = namesEl ? namesEl.value : "";
+      if(formatted !== currentVal){
+        var isFocused = false;
+        try{ isFocused = namesEl && document.activeElement === namesEl; }catch(e){}
+        if(!isFocused){
           namesEl.value = formatted;
           save("tf_names", formatted);
           hasChanged = true;
@@ -257,11 +326,12 @@
       }
     }
 
-    if(data.sent && typeof data.sent==="object" && !Array.isArray(data.sent)){
+    if(data.sent && typeof data.sent === "object" && !Array.isArray(data.sent)){
       var inc = {};
       Object.keys(data.sent).forEach(function(k){ inc[sentKey(k)] = data.sent[k]; });
-      if(sentSignature(sent) !== sentSignature(inc)){
-        sent = inc;
+      var merged = mergeSent(sent, inc);
+      if(sentSignature(merged) !== sentSignature(sent)){
+        sent = merged;
         saveSent();
         hasChanged = true;
       }
@@ -272,77 +342,130 @@
       save("tf_updated_at", String(localUpdatedAt));
     }
 
-    if(hasChanged || isManual){
+    if(hasChanged){
       render();
-      return true;
+      updateSyncStatus(true, "🟢 Real-time Sync (Tersambung)");
     }
-    return false;
+    return hasChanged;
   }
 
-  function connectMqtt(){
+  // ====== SSE ======
+  function setupSse(){
+    if(sseSource){ try{ sseSource.close(); }catch(e){} sseSource = null; }
     try{
-      if(mqttClient){ try{mqttClient.end(true);}catch(e){} }
-      mqttClient = mqtt.connect(MQTT_URL, {
-        clientId: CLIENT_ID,
-        clean: true,
-        reconnectPeriod: reconnectDelay,
-        connectTimeout: 8000,
-        keepalive: 30
-      });
-
-      mqttClient.on("connect", function(){
-        isConnected = true;
-        reconnectDelay = 2000;
+      sseSource = new EventSource(NTFY_BASE + getTopic() + "/sse");
+      sseSource.onopen = function(){
         updateSyncStatus(true, "🟢 Real-time Sync Aktif");
-        mqttClient.subscribe(getTopic(), {qos:1}, function(err){
-          if(err) console.warn("subscribe err", err);
-          // Publish state kita (retained) supaya device lain dapat.
-          // Kalau state kita lebih tua dari remote, akan ditimpa oleh retained dari broker.
-          setTimeout(publishState, 300);
-        });
-      });
-
-      mqttClient.on("message", function(topic, buf){
+      };
+      sseSource.onmessage = function(e){
         try{
-          var data = JSON.parse(buf.toString());
-          if(data.senderId === CLIENT_ID) return; // ignore self
-          if(applyRemote(data, false)){
-            showToast("⚡ Sinkron dari perangkat lain");
+          var msg = JSON.parse(e.data);
+          if(msg && msg.event === "message" && msg.message){
+            var payload = JSON.parse(msg.message);
+            if(applyRemote(payload, false)) showToast("⚡ Sinkron dari perangkat lain");
           }
-        }catch(e){ console.warn("msg parse err", e); }
-      });
+        }catch(err){}
+      };
+      sseSource.onerror = function(){
+        updateSyncStatus(false, "🟡 Menghubungkan ulang...");
+      };
+    }catch(e){ console.warn("[SSE] init error", e); }
+  }
 
-      mqttClient.on("reconnect", function(){ updateSyncStatus(false, "🟡 Menghubungkan ulang..."); });
-      mqttClient.on("close", function(){ isConnected=false; updateSyncStatus(false, "🟡 Terputus, mencoba ulang..."); });
-      mqttClient.on("error", function(e){ console.warn("mqtt err", e); });
-    }catch(e){
-      console.warn("mqtt init err", e);
-      updateSyncStatus(false, "🔴 Gagal connect");
+  // ====== POLL ======
+  // FIX #7: poll pertama 24h, selanjutnya 5m
+  async function pollLatest(isManual){
+    var since = firstPollDone ? "5m" : "24h";
+    var polled = false;
+    try{
+      var res = await fetch(NTFY_BASE + getTopic() + "/json?poll=1&since=" + since, { cache: "no-store" });
+      if(res.ok){
+        var text = await res.text();
+        if(text){
+          var lines = text.trim().split("\n");
+          var latest = null;
+          for(var i = lines.length - 1; i >= 0; i--){
+            try{
+              var m = JSON.parse(lines[i]);
+              if(m && m.message){
+                latest = JSON.parse(m.message);
+                break;
+              }
+            }catch(e){}
+          }
+          if(latest && applyRemote(latest, isManual)) polled = true;
+        }
+      }
+    }catch(e){ console.warn("[POLL] error", e); }
+    firstPollDone = true;
+
+    if(isManual){
+      showToast(polled ? "🔄 Data terbaru berhasil ditarik!" : "👍 Sudah paling up-to-date.");
     }
   }
 
-  function buildLink(n){ var b=(baseEl?baseEl.value.trim():"")||DEFAULT_BASE; b=b.split("?")[0];
-    return b + "?to=" + encodeURIComponent(n).replace(/%20/g,"_"); }
-  function buildMessage(n,l){ var t=tplEl?tplEl.value:DEFAULT_TPL;
-    return t.split("{nama}").join(n).split("{link}").join(l); }
+  // ====== SYNC ENGINE ======
+  function startSync(){
+    if(pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+    firstPollDone = false;
+    setupSse();
+    pollLatest(false);
+    pollTimer = setInterval(function(){ pollLatest(false); }, POLL_INTERVAL_MS);
+  }
 
+  // ====== BUILD ======
+  function buildLink(n){
+    var b = (baseEl ? baseEl.value.trim() : "") || DEFAULT_BASE;
+    b = b.split("?")[0];
+    return b + "?to=" + encodeURIComponent(n).replace(/%20/g,"_");
+  }
+  function buildMessage(n,l){
+    var t = tplEl ? tplEl.value : DEFAULT_TPL;
+    return t.split("{nama}").join(n).split("{link}").join(l);
+  }
+
+  // ====== CLIPBOARD ======
   async function copyText(text, btn, label){
-    var orig = label||"Salin";
-    function done(){ if(btn){ btn.innerHTML="✓ Tersalin"; btn.classList.add("done");
-      setTimeout(function(){ btn.innerHTML=orig; btn.classList.remove("done"); },1500); } }
-    try{ if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(text); done(); return; } }catch(e){}
-    try{ var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
-      document.body.appendChild(ta); ta.select(); var ok=document.execCommand("copy"); document.body.removeChild(ta);
-      if(ok){ done(); return; } }catch(e){}
+    var orig = label || "Salin";
+    function done(){
+      if(btn){
+        btn.innerHTML = "✓ Tersalin";
+        btn.classList.add("done");
+        setTimeout(function(){ btn.innerHTML = orig; btn.classList.remove("done"); }, 1500);
+      }
+    }
+    try{
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        await navigator.clipboard.writeText(text);
+        done();
+        return;
+      }
+    }catch(e){}
+    try{
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      if(ok){ done(); return; }
+    }catch(e){}
     window.prompt("Salin:", text);
   }
 
-  // Events
+  // ====== EVENTS ======
+  // FIX #2: reset timestamp saat ganti room
   if(roomIdInput) roomIdInput.addEventListener("change", function(){
-    var nr = sanitizeRoomId(roomIdInput.value) || randomRoomId();
-    currentRoomId = nr; roomIdInput.value = nr; save("tf_room_id", nr);
-    if(isConnected){ try{mqttClient.unsubscribe(MQTT_PREFIX + "old");}catch(e){} }
-    connectMqtt();
+    var nr = sanitizeRoomId(roomIdInput.value) || "tyafaki2026";
+    currentRoomId = nr;
+    roomIdInput.value = nr;
+    save("tf_room_id", nr);
+    localUpdatedAt = 0;
+    save("tf_updated_at", "0");
+    lastRenderSig = null;
+    startSync();
     showToast("🔑 Room: " + nr);
   });
 
@@ -353,30 +476,13 @@
     showToast("🔗 Link disalin! Kirim ke HP & buka di browser.");
   });
 
-  if(newRoomBtn) newRoomBtn.addEventListener("click", function(){
-    var nr = randomRoomId();
-    currentRoomId = nr; roomIdInput.value = nr; save("tf_room_id", nr);
-    connectMqtt();
-    var clean = location.href.split("?")[0].split("#")[0];
-    var url = clean + "?room=" + encodeURIComponent(currentRoomId);
-    copyText(url, newRoomBtn, "✨ Buat Room Baru");
-    showToast("✨ Room baru dibuat! Link disalin.");
-  });
-
-  if(forceSyncBtn) forceSyncBtn.addEventListener("click", function(){
-    if(!isConnected){ showToast("⚠️ Belum tersambung"); return; }
-    // Minta state terbaru dari broker (retained akan dikirim ulang saat resubscribe)
-    mqttClient.unsubscribe(getTopic(), function(){
-      mqttClient.subscribe(getTopic(), {qos:1}, function(){
-        showToast("🔄 Meminta data terbaru...");
-      });
-    });
-  });
+  if(forceSyncBtn) forceSyncBtn.addEventListener("click", function(){ pollLatest(true); });
 
   if(saveNamesBtn) saveNamesBtn.addEventListener("click", function(){
     if(!namesEl) return;
     var f = formatNamesText(namesEl.value);
-    namesEl.value = f; save("tf_names", f);
+    namesEl.value = f;
+    save("tf_names", f);
     publishState();
     showToast("💾 Disimpan & tersinkron!");
     render();
@@ -398,7 +504,10 @@
     namesEl.addEventListener("blur", function(){
       var f = formatNamesText(namesEl.value);
       if(f !== namesEl.value){
-        namesEl.value = f; save("tf_names", f); publishState(); render();
+        namesEl.value = f;
+        save("tf_names", f);
+        publishState();
+        render();
       }
     });
   }
@@ -411,8 +520,9 @@
     var cur = load("tf_theme","dark");
     document.documentElement.setAttribute("data-theme", cur);
     themeBtn.addEventListener("click", function(){
-      var nx = document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";
-      document.documentElement.setAttribute("data-theme", nx); save("tf_theme", nx);
+      var nx = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
+      document.documentElement.setAttribute("data-theme", nx);
+      save("tf_theme", nx);
     });
   }
 
@@ -420,132 +530,201 @@
     b.addEventListener("click", function(){
       filter = b.getAttribute("data-f");
       document.querySelectorAll(".filter .btn").forEach(function(x){
-        x.setAttribute("aria-pressed", x===b?"true":"false");
+        x.setAttribute("aria-pressed", x === b ? "true" : "false");
       });
       render();
     });
   });
 
+  // ====== RENDER ======
+  // FIX #8: signature cache — skip render kalau input tidak berubah
   function render(){
     if(!listEl) return;
+
     var q = searchInput ? searchInput.value.toLowerCase().trim() : "";
-    var formatted = formatNamesText(namesEl?namesEl.value:"");
+    var textareaVal = namesEl ? namesEl.value : "";
+
+    var sig = textareaVal + "|" + filter + "|" + q + "|" + sentSignature(sent);
+    if(sig === lastRenderSig) return;
+    lastRenderSig = sig;
+
+    var formatted = formatNamesText(textareaVal);
     var rawNames = formatted ? formatted.split("\n") : [];
 
-    var seen={}, dupes=0, names=[];
+    var seen = {}, dupes = 0, names = [];
     rawNames.forEach(function(n){
-      var k=n.toLowerCase(); if(seen[k]){dupes++;return;} seen[k]=true; names.push(n);
+      var k = n.toLowerCase();
+      if(seen[k]){ dupes++; return; }
+      seen[k] = true;
+      names.push(n);
     });
 
     listEl.innerHTML = "";
 
     if(dupes){
-      var dn=document.createElement("div"); dn.className="hint";
-      dn.style.marginBottom="12px"; dn.style.color="var(--brass-light)";
-      dn.textContent = "ℹ️ "+dupes+" nama ganda otomatis digabungkan.";
+      var dn = document.createElement("div");
+      dn.className = "hint";
+      dn.style.marginBottom = "12px";
+      dn.style.color = "var(--brass-light)";
+      dn.textContent = "ℹ️ " + dupes + " nama ganda otomatis digabungkan.";
       listEl.appendChild(dn);
     }
 
-    var sc=0; names.forEach(function(n){ if(sent[sentKey(n)]) sc++; });
-    var tc=names.length, pc = tc>0 ? Math.round((sc/tc)*100) : 0;
-    if(totalEl) totalEl.textContent = sc+" dari "+tc+" sudah dikirim ("+pc+"%)";
-    if(progressFill) progressFill.style.width = pc+"%";
+    // Progress — tombstone-aware: >0 = checked
+    var sc = 0;
+    names.forEach(function(n){ if(sent[sentKey(n)] > 0) sc++; });
+    var tc = names.length;
+    var pc = tc > 0 ? Math.round((sc / tc) * 100) : 0;
+    if(totalEl) totalEl.textContent = sc + " dari " + tc + " sudah dikirim (" + pc + "%)";
+    if(progressFill) progressFill.style.width = pc + "%";
 
     if(!names.length){
-      var e=document.createElement("div"); e.className="empty";
-      e.textContent="Belum ada nama tamu."; listEl.appendChild(e); return;
+      var e = document.createElement("div");
+      e.className = "empty";
+      e.textContent = "Belum ada nama tamu.";
+      listEl.appendChild(e);
+      return;
     }
 
+    // Filter + search — tombstone-aware
     var shown = names.filter(function(n){
       var k = sentKey(n);
-      if(filter==="todo" && sent[k]) return false;
-      if(filter==="sent" && !sent[k]) return false;
-      if(q && n.toLowerCase().indexOf(q)===-1) return false;
+      var isSent = sent[k] > 0;
+      if(filter === "todo" && isSent) return false;
+      if(filter === "sent" && !isSent) return false;
+      if(q && n.toLowerCase().indexOf(q) === -1) return false;
       return true;
     });
 
     if(!shown.length){
-      var e2=document.createElement("div"); e2.className="empty";
-      e2.textContent="Tidak ada yang cocok dengan filter/pencarian.";
-      listEl.appendChild(e2); return;
+      var e2 = document.createElement("div");
+      e2.className = "empty";
+      e2.textContent = "Tidak ada yang cocok dengan filter/pencarian.";
+      listEl.appendChild(e2);
+      return;
     }
 
     var frag = document.createDocumentFragment();
 
     shown.forEach(function(name){
-      var key = sentKey(name), isSent = !!sent[key], link = buildLink(name);
+      var key = sentKey(name);
+      var isSent = sent[key] > 0;
+      var link = buildLink(name);
 
       var row = document.createElement("div");
-      row.className = "row" + (isSent?" sent":"");
+      row.className = "row" + (isSent ? " sent" : "");
 
-      var nm = document.createElement("div"); nm.className="nm"; nm.textContent = name;
+      var nm = document.createElement("div");
+      nm.className = "nm";
+      nm.textContent = name;
 
-      var tag = document.createElement("label"); tag.className="sent-tag";
-      var cb = document.createElement("input"); cb.type="checkbox"; cb.checked = isSent;
+      var tag = document.createElement("label");
+      tag.className = "sent-tag";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = isSent;
       cb.addEventListener("change", function(){
-        if(cb.checked) sent[key]=Date.now(); else delete sent[key];
-        saveSent(); publishState(); render();
+        // Tombstone: unchecked = 0, checked = timestamp
+        sent[key] = cb.checked ? Date.now() : 0;
+        saveSent();
+        publishState();
+        render();
       });
       tag.appendChild(cb);
-      tag.appendChild(document.createTextNode(isSent?"Sudah dikirim":"Belum dikirim"));
+      tag.appendChild(document.createTextNode(isSent ? "Sudah dikirim" : "Belum dikirim"));
       nm.appendChild(tag);
 
-      var acts = document.createElement("div"); acts.className="acts";
+      var acts = document.createElement("div");
+      acts.className = "acts";
 
       var copyBtn = document.createElement("button");
-      copyBtn.type="button"; copyBtn.className="btn"; copyBtn.innerHTML="📋 Salin Link";
+      copyBtn.type = "button";
+      copyBtn.className = "btn";
+      copyBtn.innerHTML = "📋 Salin Link";
       copyBtn.addEventListener("click", function(){ copyText(link, copyBtn, "📋 Salin Link"); });
 
       var wa = document.createElement("a");
-      wa.className="btn solid"; wa.innerHTML="💬 Kirim WA";
-      wa.target="_blank"; wa.rel="noopener";
-      wa.href="https://wa.me/?text="+encodeURIComponent(buildMessage(name,link));
+      wa.className = "btn solid";
+      wa.innerHTML = "💬 Kirim WA";
+      wa.target = "_blank";
+      wa.rel = "noopener";
+      wa.href = "https://wa.me/?text=" + encodeURIComponent(buildMessage(name, link));
       wa.addEventListener("click", function(){
-        sent[key]=Date.now(); saveSent(); publishState();
+        sent[key] = Date.now();
+        saveSent();
+        publishState();
         setTimeout(render, 400);
       });
 
       var delBtn = document.createElement("button");
-      delBtn.type="button"; delBtn.className="btn-trash"; delBtn.title="Hapus "+name;
-      delBtn.innerHTML='<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>';
+      delBtn.type = "button";
+      delBtn.className = "btn-trash";
+      delBtn.title = "Hapus " + name;
+      delBtn.innerHTML = '<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>';
       delBtn.addEventListener("click", function(){
         if(!namesEl) return;
-        var curr = formatNamesText(namesEl.value).split("\n").filter(function(x){return x.length>0;});
-        var upd = curr.filter(function(x){return x!==name;}).join("\n");
-        namesEl.value = upd; delete sent[key];
-        save("tf_names", upd); saveSent(); publishState();
-        showToast("🗑 "+name+" dihapus."); render();
+        var curr = formatNamesText(namesEl.value).split("\n").filter(function(x){ return x.length > 0; });
+        var upd = curr.filter(function(x){ return x !== name; }).join("\n");
+        namesEl.value = upd;
+        delete sent[key];
+        save("tf_names", upd);
+        saveSent();
+        publishState();
+        showToast("🗑 " + name + " dihapus.");
+        render();
       });
 
-      acts.appendChild(copyBtn); acts.appendChild(wa); acts.appendChild(delBtn);
+      acts.appendChild(copyBtn);
+      acts.appendChild(wa);
+      acts.appendChild(delBtn);
 
-      var url = document.createElement("div"); url.className="url"; url.textContent = link;
+      var url = document.createElement("div");
+      url.className = "url";
+      url.textContent = link;
 
-      row.appendChild(nm); row.appendChild(acts); row.appendChild(url);
+      row.appendChild(nm);
+      row.appendChild(acts);
+      row.appendChild(url);
       frag.appendChild(row);
     });
 
     listEl.appendChild(frag);
   }
 
-  // Flush saat tab disembunyikan (fix iOS suspend)
+  // ====== FLUSH ON HIDE ======
+  // FIX #1b: jangan update timestamp — biar device lain yang menang kalau beacon gagal
   function flushBeforeHide(){
-    if(mqttClient && isConnected){
-      var p = buildPayload();
-      localUpdatedAt = p.updatedAt;
-      save("tf_updated_at", String(localUpdatedAt));
-      try{ mqttClient.publish(getTopic(), JSON.stringify(p), {qos:1, retain:true}); }catch(e){}
-    }
+    var p = buildPayload();
+    var url = NTFY_BASE + getTopic();
+    var body = JSON.stringify(p);
+    try{
+      if(navigator.sendBeacon){
+        navigator.sendBeacon(url, new Blob([body], {type: "application/json"}));
+        return;
+      }
+    }catch(e){}
+    try{
+      fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: body,
+        keepalive: true
+      }).catch(function(){});
+    }catch(e){}
   }
+
   document.addEventListener("visibilitychange", function(){
-    if(document.visibilityState==="hidden") flushBeforeHide();
-    else if(mqttClient && !isConnected) connectMqtt();
+    if(document.visibilityState === "hidden"){
+      flushBeforeHide();
+    } else if(!isLive){
+      startSync();
+    }
   });
   window.addEventListener("pagehide", flushBeforeHide);
 
-  // Start
+  // ====== START ======
   render();
-  connectMqtt();
+  startSync();
 })();
 </script>
 </body>
