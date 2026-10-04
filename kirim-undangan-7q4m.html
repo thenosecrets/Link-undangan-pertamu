@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Link Undangan per Tamu — Tya &amp; Faki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=Jost:wght@300;400;500&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
+<style>
+  :root{
+    box-sizing:border-box;
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    --bg:#161512;
+    --panel:#1f1d19;
+    --line:rgba(169,121,60,.45);
+    --brass:#a9793c;
+    --brass-light:#c9a15c;
+    --cream:#f3ecd8;
+    --muted:rgba(243,236,216,.6);
+    --field:#24221d;
+  }
+  :root[data-theme="light"]{
+    --bg:#d9d9d9;
+    --panel:#e6e4df;
+    --line:rgba(169,121,60,.55);
+    --cream:#1f1d19;
+    --muted:rgba(31,29,25,.6);
+    --field:#f1efea;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;}
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  body{
+    background:var(--bg);
+    color:var(--cream);
+    font-family:"Jost",system-ui,-apple-system,"Segoe UI",sans-serif;
+    font-weight:300;
+    font-size:15px;
+    line-height:1.55;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:36px 20px 64px;}
+  header{text-align:center;margin-bottom:30px;}
+  .script{font-family:"Mrs Saint Delafield","Brush Script MT",cursive;font-size:46px;color:var(--brass-light);line-height:1.1;}
+  h1{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:20px;margin:6px 0 6px;}
+  header p{margin:0;color:var(--muted);font-size:14px;}
+
+  .block{border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:18px;background:var(--panel);}
+  label{display:block;color:var(--brass-light);font-size:13.5px;margin-bottom:8px;font-weight:400;}
+  .hint{color:var(--muted);font-size:12.5px;margin-top:6px;}
+  input[type=text],textarea{
+    width:100%;
+    background:var(--field);
+    color:var(--cream);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 12px;
+    font:inherit;
+    font-weight:300;
+  }
+  textarea{resize:vertical;}
+  #names{min-height:180px;}
+  #tpl{min-height:230px;font-size:14px;}
+  input:focus-visible,textarea:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--brass-light);outline-offset:2px;}
+  details summary{cursor:pointer;color:var(--brass-light);font-size:13.5px;}
+  details[open] summary{margin-bottom:10px;}
+
+  .count{display:flex;justify-content:space-between;align-items:baseline;margin:26px 0 12px;}
+  .count h2{font-family:"Fraunces",Georgia,serif;font-weight:400;font-size:18px;margin:0;}
+  .count span{color:var(--muted);font-size:13px;}
+
+  .row{
+    border-top:1px solid var(--line);
+    padding:14px 2px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:6px 12px;
+    align-items:center;
+  }
+  .row:last-child{border-bottom:1px solid var(--line);}
+  .row .nm{font-family:"Fraunces",Georgia,serif;font-size:17px;}
+  .row .url{grid-column:1 / -1;font-size:12.5px;color:var(--muted);word-break:break-all;}
+  .row .acts{display:flex;gap:8px;grid-row:1;grid-column:2;}
+  .btn{
+    border:1px solid var(--brass);
+    background:transparent;
+    color:var(--brass-light);
+    border-radius:999px;
+    padding:7px 14px;
+    font:inherit;
+    font-size:13px;
+    font-weight:400;
+    cursor:pointer;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .btn.solid{background:var(--brass);color:#fff;}
+  .btn.done{background:transparent;color:var(--cream);border-color:var(--cream);}
+  .row.sent .nm{color:var(--muted);}
+  .sent-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    margin-left:10px;font-family:"Jost",system-ui,sans-serif;font-size:12.5px;
+    color:var(--muted);cursor:pointer;user-select:none;vertical-align:middle;
+  }
+  .sent-tag input{accent-color:#a9793c;width:16px;height:16px;margin:0;cursor:pointer;}
+  .row.sent .sent-tag{color:var(--brass-light);}
+  .filter{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
+  .filter .btn[aria-pressed="true"]{background:var(--brass);color:#fff;}
+  .empty{color:var(--muted);text-align:center;padding:20px 0;}
+  @media (max-width:420px){
+    .row{grid-template-columns:1fr;}
+    .row .acts{grid-row:auto;grid-column:1;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="script">Tya &amp; Faki</div>
+    <h1>Link undangan per tamu</h1>
+    <p>Tulis nama tamu, satu nama per baris. Link dengan nama masing-masing langsung muncul di bawah.</p>
+  </header>
+
+  <div class="block">
+    <label for="names">Daftar nama tamu</label>
+    <textarea id="names" spellcheck="false" placeholder="Tulis satu nama per baris, misalnya:&#10;Budi Santoso&#10;Ibu Siti&#10;Keluarga Bpk. Slamet"></textarea>
+    <div class="hint">Nama hanya tersimpan di browser ini, tidak dikirim ke mana pun. Pakai HP atau laptop yang sama setiap kali membuka halaman ini.</div>
+  </div>
+
+  <div class="block">
+    <details>
+      <summary>Atur alamat undangan dan isi pesan WhatsApp</summary>
+      <label for="base">Alamat undangan</label>
+      <input type="text" id="base" spellcheck="false">
+      <div class="hint" style="margin-bottom:16px;">Ganti hanya kalau alamat GitHub Pages berubah.</div>
+      <label for="tpl">Isi pesan WhatsApp</label>
+      <textarea id="tpl"></textarea>
+      <div class="hint"><b>{nama}</b> diganti nama tamu, <b>{link}</b> diganti link undangannya.</div>
+    </details>
+  </div>
+
+  <div class="count">
+    <h2>Link siap kirim</h2>
+    <span id="total"></span>
+  </div>
+  <div class="filter" role="group" aria-label="Tampilkan">
+    <button type="button" class="btn" data-f="all" aria-pressed="true">Semua</button>
+    <button type="button" class="btn" data-f="todo" aria-pressed="false">Belum dikirim</button>
+    <button type="button" class="btn" data-f="sent" aria-pressed="false">Sudah dikirim</button>
+  </div>
+  <div id="list"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var DEFAULT_BASE = "https://thenosecrets.github.io/Undangan-Tya-Faki/";
+  var DEFAULT_NAMES = "";
+  var DEFAULT_TPL =
+    "Assalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
+    "Kepada Yth.\n{nama}\n\n" +
+    "Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk hadir di acara pernikahan kami:\n\n" +
+    "Tya & Faki\n" +
+    "Jum'at, 27 November 2026\n\n" +
+    "Info lengkap undangan:\n{link}\n\n" +
+    "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.\n\n" +
+    "Wassalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
+    "Kami yang berbahagia,\nTya & Faki";
+
+  var namesEl = document.getElementById("names");
+  var baseEl = document.getElementById("base");
+  var tplEl = document.getElementById("tpl");
+  var listEl = document.getElementById("list");
+  var totalEl = document.getElementById("total");
+
+  function load(key, fallback){
+    try{ var v = localStorage.getItem(key); return v === null ? fallback : v; }catch(e){ return fallback; }
+  }
+  function save(key, val){
+    try{ localStorage.setItem(key, val); }catch(e){}
+  }
+
+  namesEl.value = load("tf_names", DEFAULT_NAMES);
+  baseEl.value = load("tf_base", DEFAULT_BASE);
+  tplEl.value = load("tf_tpl", DEFAULT_TPL);
+
+  var sent = {};
+  try{ sent = JSON.parse(load("tf_sent","{}")) || {}; }catch(e){ sent = {}; }
+  function saveSent(){ save("tf_sent", JSON.stringify(sent)); }
+  var filter = "all";
+  document.querySelectorAll(".filter .btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      filter = b.getAttribute("data-f");
+      document.querySelectorAll(".filter .btn").forEach(function(x){ x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      render();
+    });
+  });
+
+  function buildLink(name){
+    var base = baseEl.value.trim() || DEFAULT_BASE;
+    base = base.split("?")[0];
+    var enc = encodeURIComponent(name).replace(/%20/g, "+");
+    return base + "?to=" + enc;
+  }
+  function buildMessage(name, link){
+    return tplEl.value.split("{nama}").join(name).split("{link}").join(link);
+  }
+
+  function copyText(text, btn){
+    function done(){
+      var old = btn.textContent;
+      btn.textContent = "Tersalin";
+      btn.classList.add("done");
+      setTimeout(function(){ btn.textContent = old; btn.classList.remove("done"); }, 1600);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done).catch(function(){ fallback(); });
+    } else { fallback(); }
+    function fallback(){
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly","");
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try{ document.execCommand("copy"); done(); }catch(e){ window.prompt("Salin link ini:", text); }
+      document.body.removeChild(ta);
+    }
+  }
+
+  function render(){
+    var names = namesEl.value.split("\n")
+      .map(function(n){ return n.replace(/^\s*\d+[\.\)]\s*/, "").replace(/\s+/g," ").trim(); })
+      .filter(function(n){ return n.length > 0; });
+    var seen = {}, dupes = 0;
+    names = names.filter(function(n){
+      var k = n.toLowerCase();
+      if (seen[k]){ dupes++; return false; }
+      seen[k] = true; return true;
+    });
+    listEl.innerHTML = "";
+    if (dupes){
+      var dn = document.createElement("div");
+      dn.className = "hint";
+      dn.style.marginBottom = "10px";
+      dn.textContent = dupes + " nama ditulis lebih dari sekali dan hanya ditampilkan satu kali. Kalau memang orang yang berbeda, beri keterangan pembeda, misal \"Ela (Sidareja)\".";
+      listEl.appendChild(dn);
+    }
+    var sentCount = names.filter(function(n){ return sent[n]; }).length;
+    totalEl.textContent = sentCount + " dari " + names.length + " sudah dikirim";
+    if (!names.length){
+      var e = document.createElement("div");
+      e.className = "empty";
+      e.textContent = "Belum ada nama. Tulis nama tamu di kotak atas.";
+      listEl.appendChild(e);
+      return;
+    }
+    var shown = names.filter(function(n){
+      if (filter === "todo") return !sent[n];
+      if (filter === "sent") return !!sent[n];
+      return true;
+    });
+    if (!shown.length){
+      var e2 = document.createElement("div");
+      e2.className = "empty";
+      e2.textContent = filter === "todo" ? "Semua tamu sudah dikirimi undangan." : "Belum ada tamu yang ditandai sudah dikirim.";
+      listEl.appendChild(e2);
+      return;
+    }
+    shown.forEach(function(name){
+      var link = buildLink(name);
+      var row = document.createElement("div");
+      row.className = "row" + (sent[name] ? " sent" : "");
+
+      var nm = document.createElement("div");
+      nm.className = "nm";
+      nm.textContent = name;
+
+      var tag = document.createElement("label");
+      tag.className = "sent-tag";
+      var cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = !!sent[name];
+      cb.addEventListener("change", function(){
+        if (cb.checked) sent[name] = Date.now(); else delete sent[name];
+        saveSent(); render();
+      });
+      tag.appendChild(cb);
+      tag.appendChild(document.createTextNode(sent[name] ? "Sudah dikirim" : "Belum dikirim"));
+      nm.appendChild(tag);
+
+      var acts = document.createElement("div");
+      acts.className = "acts";
+      var copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "btn";
+      copyBtn.textContent = "Salin link";
+      copyBtn.addEventListener("click", function(){ copyText(link, copyBtn); });
+
+      var wa = document.createElement("a");
+      wa.className = "btn solid";
+      wa.textContent = "Kirim WA";
+      wa.target = "_blank";
+      wa.rel = "noopener";
+      wa.href = "https://wa.me/?text=" + encodeURIComponent(buildMessage(name, link));
+      wa.addEventListener("click", function(){
+        sent[name] = Date.now();
+        saveSent();
+        setTimeout(render, 300);
+      });
+
+      acts.appendChild(copyBtn);
+      acts.appendChild(wa);
+
+      var url = document.createElement("div");
+      url.className = "url";
+      url.textContent = link;
+
+      row.appendChild(nm);
+      row.appendChild(acts);
+      row.appendChild(url);
+      listEl.appendChild(row);
+    });
+  }
+
+  namesEl.addEventListener("input", function(){ save("tf_names", namesEl.value); render(); });
+  baseEl.addEventListener("input", function(){ save("tf_base", baseEl.value); render(); });
+  tplEl.addEventListener("input", function(){ save("tf_tpl", tplEl.value); render(); });
+  render();
+})();
+</script>
+</body>
+</html>
