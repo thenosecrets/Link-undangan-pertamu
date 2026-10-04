@@ -7,283 +7,91 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Jost:wght@300;400;500;600&family=Mrs+Saint+Delafield&display=swap" rel="stylesheet">
-
 <style>
-  :root {
-    box-sizing: border-box;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    --bg: #161512;
-    --panel: #1f1d19;
-    --line: rgba(169, 121, 60, 0.45);
-    --brass: #a9793c;
-    --brass-light: #c9a15c;
-    --cream: #f3ecd8;
-    --muted: rgba(243, 236, 216, 0.65);
-    --field: #24221d;
-    --danger: #ef4444;
-    --success: #10b981;
-  }
-
-  :root[data-theme="light"] {
-    --bg: #f4f3ef;
-    --panel: #ffffff;
-    --line: rgba(169, 121, 60, 0.35);
-    --brass: #8d622a;
-    --brass-light: #a9793c;
-    --cream: #1f1d19;
-    --muted: rgba(31, 29, 25, 0.65);
-    --field: #faf8f5;
-  }
-
-  *, *::before, *::after { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--cream);
-    font-family: "Jost", system-ui, -apple-system, sans-serif;
-    font-weight: 300;
-    font-size: 15px;
-    line-height: 1.55;
-    transition: background 0.3s ease, color 0.3s ease;
-  }
-
-  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 64px; }
-
-  header { text-align: center; margin-bottom: 20px; position: relative; }
-  .script { font-family: "Mrs Saint Delafield", cursive; font-size: 52px; color: var(--brass-light); line-height: 1; }
-  h1 { font-family: "Fraunces", serif; font-weight: 400; font-size: 22px; margin: 4px 0 6px; letter-spacing: 0.3px; }
-  header p { margin: 0; color: var(--muted); font-size: 13.5px; }
-
-  .theme-btn {
-    position: absolute; top: 0; right: 0;
-    background: var(--panel);
-    border: 1px solid var(--line);
-    color: var(--cream);
-    border-radius: 20px;
-    padding: 6px 12px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .theme-btn:hover { border-color: var(--brass-light); }
-
-  .block {
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 20px;
-    background: var(--panel);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  }
-
-  label { display: block; color: var(--brass-light); font-size: 14px; margin-bottom: 8px; font-weight: 500; }
-  .hint { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
-
-  input[type="text"], textarea {
-    width: 100%;
-    background: var(--field);
-    color: var(--cream);
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    padding: 11px 14px;
-    font: inherit;
-    font-weight: 300;
-    transition: border-color 0.2s;
-  }
-
-  textarea { resize: vertical; }
-  #names { min-height: 170px; font-family: monospace, monospace; font-size: 14px; }
-  #tpl { min-height: 200px; font-size: 13.5px; }
-
-  input:focus-visible, textarea:focus-visible, button:focus-visible {
-    outline: 2px solid var(--brass-light);
-    outline-offset: 2px;
-  }
-
-  details summary { cursor: pointer; color: var(--brass-light); font-size: 14px; font-weight: 500; }
-  details[open] summary { margin-bottom: 14px; }
-
-  .action-bar {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-top: 14px; gap: 10px; flex-wrap: wrap;
-  }
-
-  .status-pill {
-    font-size: 13px;
-    color: var(--brass-light);
-    display: flex; align-items: center; gap: 8px;
-    background: rgba(169, 121, 60, 0.1);
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--line);
-    flex-wrap: wrap;
-  }
-
-  .dot-pulse {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--success);
-    box-shadow: 0 0 8px var(--success);
-    animation: pulse 1.8s infinite;
-  }
-
-  .dot-pulse.connecting { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
-
-  @keyframes pulse {
-    0% { opacity: 0.4; transform: scale(0.9); }
-    50% { opacity: 1; transform: scale(1.2); }
-    100% { opacity: 0.4; transform: scale(0.9); }
-  }
-
-  .room-box { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
-
-  .room-input {
-    max-width: 220px !important;
-    font-family: monospace;
-    font-weight: bold;
-    letter-spacing: 0.5px;
-  }
-
-  .sync-time { font-size: 11.5px; color: var(--muted); margin-left: auto; }
-  .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .btn {
-    border: 1px solid var(--brass);
-    background: transparent;
-    color: var(--brass-light);
-    border-radius: 999px;
-    padding: 8px 16px;
-    font: inherit; font-size: 13px; font-weight: 500;
-    cursor: pointer;
-    text-decoration: none;
-    white-space: nowrap;
-    display: inline-flex; align-items: center; justify-content: center;
-    gap: 6px;
-    transition: all 0.2s ease;
-  }
-
-  .btn.solid { background: var(--brass); color: #ffffff; border-color: var(--brass); }
-  .btn.solid:hover { opacity: 0.92; transform: translateY(-1px); }
-  .btn.done { background: transparent; color: var(--cream); border-color: var(--cream); }
-
-  .btn-trash {
-    border: 1px solid rgba(239, 68, 68, 0.35);
-    background: rgba(239, 68, 68, 0.08);
-    color: var(--danger);
-    border-radius: 8px;
-    padding: 6px 10px;
-    cursor: pointer;
-    display: inline-flex; align-items: center; justify-content: center;
-    transition: all 0.2s ease;
-  }
-
-  .btn-trash:hover { background: var(--danger); color: #ffffff; border-color: var(--danger); }
-
-  .count-bar { margin: 24px 0 14px; }
-  .count-title { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-  .count-title h2 { font-family: "Fraunces", serif; font-weight: 400; font-size: 19px; margin: 0; }
-  .count-title span { color: var(--muted); font-size: 13px; }
-
-  .progress-bg {
-    width: 100%; height: 8px;
-    background: var(--field);
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-
-  .progress-fill {
-    height: 100%; width: 0%;
-    background: var(--brass-light);
-    transition: width 0.4s ease;
-  }
-
-  .search-box { margin-bottom: 14px; }
-  .filter { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter .btn[aria-pressed="true"] { background: var(--brass); color: #ffffff; }
-
-  .row {
-    border-top: 1px solid var(--line);
-    padding: 14px 4px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px 12px;
-    align-items: center;
-    transition: background 0.2s;
-  }
-  .row:last-child { border-bottom: 1px solid var(--line); }
-
-  .row .nm { font-family: "Fraunces", serif; font-size: 17.5px; word-break: break-word; font-weight: 500; }
-  .row .url { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); word-break: break-all; font-family: monospace; }
-  .row .acts { display: flex; gap: 8px; grid-row: 1; grid-column: 2; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
-
-  .row.sent { opacity: 0.78; }
-  .row.sent .nm { color: var(--muted); text-decoration: line-through; }
-
-  .sent-tag {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-left: 10px; font-family: "Jost", sans-serif; font-size: 12.5px;
-    color: var(--muted); cursor: pointer; user-select: none; vertical-align: middle;
-  }
-  .sent-tag input { accent-color: var(--brass); width: 16px; height: 16px; margin: 0; cursor: pointer; }
-  .row.sent .sent-tag { color: var(--brass-light); text-decoration: none; }
-
-  .toast {
-    position: fixed;
-    bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #1e293b;
-    color: #ffffff;
-    padding: 12px 22px;
-    border-radius: 30px;
-    font-size: 14px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-    border: 1px solid var(--brass-light);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    z-index: 9999;
-    pointer-events: none;
-    text-align: center;
-    max-width: 90vw;
-  }
-
-  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-  .empty { color: var(--muted); text-align: center; padding: 28px 0; }
-
-  @media (max-width: 520px) {
-    .row { grid-template-columns: 1fr; }
-    .row .acts { grid-row: auto; grid-column: 1; justify-content: flex-start; margin-top: 4px; }
-  }
+  :root{--bg:#161512;--panel:#1f1d19;--line:rgba(169,121,60,.45);--brass:#a9793c;--brass-light:#c9a15c;--cream:#f3ecd8;--muted:rgba(243,236,216,.65);--field:#24221d;--danger:#ef4444;--success:#10b981;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  :root[data-theme="light"]{--bg:#f4f3ef;--panel:#fff;--line:rgba(169,121,60,.35);--brass:#8d622a;--brass-light:#a9793c;--cream:#1f1d19;--muted:rgba(31,29,25,.65);--field:#faf8f5}
+  *,*::before,*::after{box-sizing:border-box}html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--cream);font-family:"Jost",system-ui,-apple-system,sans-serif;font-weight:300;font-size:15px;line-height:1.55;transition:background .3s,color .3s}
+  .wrap{max-width:760px;margin:0 auto;padding:20px 16px 64px}
+  header{text-align:center;margin-bottom:20px;position:relative}
+  .script{font-family:"Mrs Saint Delafield",cursive;font-size:52px;color:var(--brass-light);line-height:1}
+  h1{font-family:"Fraunces",serif;font-weight:400;font-size:22px;margin:4px 0 6px;letter-spacing:.3px}
+  header p{margin:0;color:var(--muted);font-size:13.5px}
+  .theme-btn{position:absolute;top:0;right:0;background:var(--panel);border:1px solid var(--line);color:var(--cream);border-radius:20px;padding:6px 12px;font-size:13px;cursor:pointer;transition:all .2s}
+  .theme-btn:hover{border-color:var(--brass-light)}
+  .block{border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:20px;background:var(--panel);box-shadow:0 4px 16px rgba(0,0,0,.08)}
+  label{display:block;color:var(--brass-light);font-size:14px;margin-bottom:8px;font-weight:500}
+  .hint{color:var(--muted);font-size:12.5px;margin-top:6px}
+  input[type=text],textarea{width:100%;background:var(--field);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font:inherit;font-weight:300;transition:border-color .2s}
+  textarea{resize:vertical}
+  #names{min-height:170px;font-family:monospace;font-size:14px}
+  #tpl{min-height:200px;font-size:13.5px}
+  input:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--brass-light);outline-offset:2px}
+  details summary{cursor:pointer;color:var(--brass-light);font-size:14px;font-weight:500}
+  details[open] summary{margin-bottom:14px}
+  .action-bar{display:flex;align-items:center;justify-content:space-between;margin-top:14px;gap:10px;flex-wrap:wrap}
+  .status-pill{font-size:13px;color:var(--brass-light);display:flex;align-items:center;gap:8px;background:rgba(169,121,60,.1);padding:6px 14px;border-radius:20px;border:1px solid var(--line);flex-wrap:wrap}
+  .dot-pulse{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success);animation:pulse 1.8s infinite}
+  .dot-pulse.connecting{background:#f59e0b;box-shadow:0 0 8px #f59e0b}
+  @keyframes pulse{0%{opacity:.4;transform:scale(.9)}50%{opacity:1;transform:scale(1.2)}100%{opacity:.4;transform:scale(.9)}}
+  .room-box{display:flex;gap:10px;align-items:center;margin-top:12px;flex-wrap:wrap}
+  .room-input{max-width:260px !important;font-family:monospace;font-weight:bold;letter-spacing:.5px}
+  .sync-time{font-size:11.5px;color:var(--muted);margin-left:auto}
+  .btn-group{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border:1px solid var(--brass);background:transparent;color:var(--brass-light);border-radius:999px;padding:8px 16px;font:inherit;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all .2s}
+  .btn.solid{background:var(--brass);color:#fff;border-color:var(--brass)}
+  .btn.solid:hover{opacity:.92;transform:translateY(-1px)}
+  .btn.done{background:transparent;color:var(--cream);border-color:var(--cream)}
+  .btn-trash{border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.08);color:var(--danger);border-radius:8px;padding:6px 10px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;transition:all .2s}
+  .btn-trash:hover{background:var(--danger);color:#fff;border-color:var(--danger)}
+  .count-bar{margin:24px 0 14px}
+  .count-title{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .count-title h2{font-family:"Fraunces",serif;font-weight:400;font-size:19px;margin:0}
+  .count-title span{color:var(--muted);font-size:13px}
+  .progress-bg{width:100%;height:8px;background:var(--field);border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-bottom:16px}
+  .progress-fill{height:100%;width:0%;background:var(--brass-light);transition:width .4s}
+  .search-box{margin-bottom:14px}
+  .filter{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+  .filter .btn[aria-pressed=true]{background:var(--brass);color:#fff}
+  .row{border-top:1px solid var(--line);padding:14px 4px;display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;transition:background .2s}
+  .row:last-child{border-bottom:1px solid var(--line)}
+  .row .nm{font-family:"Fraunces",serif;font-size:17.5px;word-break:break-word;font-weight:500}
+  .row .url{grid-column:1/-1;font-size:12.5px;color:var(--muted);word-break:break-all;font-family:monospace}
+  .row .acts{display:flex;gap:8px;grid-row:1;grid-column:2;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+  .row.sent{opacity:.78}
+  .row.sent .nm{color:var(--muted);text-decoration:line-through}
+  .sent-tag{display:inline-flex;align-items:center;gap:6px;margin-left:10px;font-family:"Jost",sans-serif;font-size:12.5px;color:var(--muted);cursor:pointer;user-select:none;vertical-align:middle}
+  .sent-tag input{accent-color:var(--brass);width:16px;height:16px;margin:0;cursor:pointer}
+  .row.sent .sent-tag{color:var(--brass-light);text-decoration:none}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:#1e293b;color:#fff;padding:12px 22px;border-radius:30px;font-size:14px;box-shadow:0 10px 25px rgba(0,0,0,.4);border:1px solid var(--brass-light);opacity:0;transition:all .3s cubic-bezier(.175,.885,.32,1.275);z-index:9999;pointer-events:none;text-align:center;max-width:90vw}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+  .empty{color:var(--muted);text-align:center;padding:28px 0}
+  @media(max-width:520px){.row{grid-template-columns:1fr}.row .acts{grid-row:auto;grid-column:1;justify-content:flex-start;margin-top:4px}}
 </style>
 </head>
 <body>
-
 <div class="wrap">
   <header>
-    <button type="button" class="theme-btn" id="themeBtn" title="Ganti Tema Tampilan">☀ / 🌙</button>
+    <button type="button" class="theme-btn" id="themeBtn" title="Ganti Tema">☀ / 🌙</button>
     <div class="script">Tya &amp; Faki</div>
     <h1>Link Undangan per Tamu</h1>
-    <p>Nama otomatis diformat dengan garis bawah (<b>_</b>). Ketikan di HP langsung tersinkron ke Laptop secara otomatis.</p>
+    <p>Nama otomatis diformat dengan garis bawah (<b>_</b>). Ketikan di HP langsung tersinkron ke Laptop.</p>
   </header>
 
   <div class="block">
     <label for="names">Daftar Nama Tamu</label>
     <textarea id="names" placeholder="Tulis nama tamu (satu per baris) contoh:&#10;Desy_Elfina&#10;Desy_Safitri&#10;FAKI&#10;Tes" spellcheck="false"></textarea>
-    <div class="hint">💡 Ketikan di HP/Laptop tersimpan &amp; tersinkronisasi otomatis secara real-time.</div>
+    <div class="hint">💡 Ketikan di HP/Laptop tersimpan &amp; tersinkronisasi otomatis.</div>
 
     <div class="action-bar">
       <div class="status-pill" id="cloudStatus">
         <div class="dot-pulse connecting"></div>
-        <span id="cloudStatusText">🟡 Menghubungkan Sync Cloud...</span>
+        <span id="cloudStatusText">🟡 Menghubungkan...</span>
         <span class="sync-time" id="lastSyncTime">Belum sync</span>
       </div>
-
       <div class="btn-group">
-        <button type="button" class="btn" id="forceSyncBtn" title="Tarik data terbaru dari Cloud">🔄 Paksa Sync</button>
-        <button type="button" class="btn" id="copyTextDataBtn" title="Salin seluruh teks nama">📋 Salin Teks Nama</button>
+        <button type="button" class="btn" id="forceSyncBtn">🔄 Paksa Sync</button>
+        <button type="button" class="btn" id="copyTextDataBtn">📋 Salin Teks Nama</button>
         <button type="button" class="btn solid" id="saveNamesBtn">💾 Simpan Perubahan</button>
       </div>
     </div>
@@ -292,21 +100,22 @@
   <div class="block">
     <details open>
       <summary>⚙️ Pengaturan Room Sync (HP ↔ Laptop) &amp; Alamat Undangan</summary>
-      <div style="margin-top:14px;">
-        <label for="roomIdInput">Kode Room Sync (Gunakan kode yang sama di HP &amp; Laptop)</label>
+      <div style="margin-top:14px">
+        <label for="roomIdInput">Kode Room Sync (sama di HP &amp; Laptop)</label>
         <div class="room-box">
           <input type="text" id="roomIdInput" class="room-input" spellcheck="false">
-          <button type="button" class="btn" id="copyRoomLinkBtn">📋 Salin Link Room Sync untuk HP</button>
+          <button type="button" class="btn" id="copyRoomLinkBtn">📋 Salin Link untuk HP</button>
+          <button type="button" class="btn" id="newRoomBtn">✨ Buat Room Baru</button>
         </div>
-        <div class="hint" style="margin-bottom:18px;">📱 Buka link room ini di Browser HP Anda agar otomatis terhubung dengan Laptop. 🔒 Kode room bersifat rahasia — siapa pun yang tahu kodenya bisa melihat dan mengubah daftar tamu.</div>
+        <div class="hint" style="margin-bottom:18px">📱 Buka link di browser HP agar otomatis terhubung. 🔒 Kode room rahasia — siapa pun yang tahu bisa lihat/ubah daftar.</div>
 
         <label for="base">Alamat Utama Undangan</label>
         <input type="text" id="base" spellcheck="false">
-        <div class="hint" style="margin-bottom:16px;">Ubah jika domain utama undangan GitHub Pages diperbarui.</div>
+        <div class="hint" style="margin-bottom:16px">Ubah jika domain utama undangan diperbarui.</div>
 
         <label for="tpl">Format Pesan WhatsApp</label>
         <textarea id="tpl" spellcheck="false"></textarea>
-        <div class="hint">Gunakan variabel <b>{nama}</b> untuk nama tamu, dan <b>{link}</b> untuk link undangan.</div>
+        <div class="hint">Gunakan <b>{nama}</b> untuk nama tamu, <b>{link}</b> untuk link undangan.</div>
       </div>
     </details>
   </div>
@@ -316,16 +125,14 @@
       <h2>Daftar Link Undangan</h2>
       <span id="total">0 dari 0 sudah dikirim (0%)</span>
     </div>
-    <div class="progress-bg">
-      <div class="progress-fill" id="progressFill"></div>
-    </div>
+    <div class="progress-bg"><div class="progress-fill" id="progressFill"></div></div>
   </div>
 
   <div class="search-box">
     <input type="text" id="searchInput" placeholder="🔍 Cari nama tamu..." spellcheck="false">
   </div>
 
-  <div class="filter" role="group" aria-label="Filter status undangan">
+  <div class="filter" role="group">
     <button type="button" class="btn" data-f="all" aria-pressed="true">Semua</button>
     <button type="button" class="btn" data-f="todo" aria-pressed="false">Belum Dikirim</button>
     <button type="button" class="btn" data-f="sent" aria-pressed="false">Sudah Dikirim</button>
@@ -336,678 +143,410 @@
 
 <div id="toast" class="toast">Notifikasi</div>
 
-<script type="module">
-  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-  import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-  import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+<script src="https://unpkg.com/mqtt@5.10.1/dist/mqtt.min.js"></script>
+<script>
+(function(){
+  "use strict";
 
-  (function(){
-    "use strict";
+  var MQTT_URL = "wss://broker.emqx.io:8084/mqtt";
+  var MQTT_PREFIX = "undangan-tya-faki-2026/";
 
-    // ====== KONFIGURASI DEFAULT ======
-    var DEFAULT_BASE = "https://thenosecrets.github.io/Undangan-Tya-Faki/";
-    var DEFAULT_NAMES = [
-      "Desy_Elfina", "Desy_Safitri", "Bernika", "Ela", "Nanda", "Teguh",
-      "Yusuf", "Silvy", "Susmi", "Nur_Fatimah", "FAKI", "Tes"
-    ].join("\n");
+  var DEFAULT_BASE = "https://thenosecrets.github.io/Undangan-Tya-Faki/";
+  var DEFAULT_NAMES = ["Desy_Elfina","Desy_Safitri","Bernika","Ela","Nanda","Teguh","Yusuf","Silvy","Susmi","Nur_Fatimah","FAKI","Tes"].join("\n");
+  var DEFAULT_TPL =
+    "Assalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
+    "Kepada Yth.\nBapak/Ibu/Saudara/i {nama}\n\n" +
+    "Tanpa mengurangi rasa hormat, kami bermaksud mengundang Anda untuk hadir di acara pernikahan kami:\n\n" +
+    "Tya & Faki\nJum'at, 27 November 2026\n\n" +
+    "Info lengkap mengenai acara dan lokasi dapat dilihat melalui link undangan berikut:\n{link}\n\n" +
+    "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.\n\n" +
+    "Wassalamu'alaikum Warahmatullahi Wabarakatuh\n\nKami yang berbahagia,\nTya & Faki";
 
-    var DEFAULT_TPL =
-      "Assalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
-      "Kepada Yth.\nBapak/Ibu/Saudara/i {nama}\n\n" +
-      "Tanpa mengurangi rasa hormat, kami bermaksud mengundang Anda untuk hadir di acara pernikahan kami:\n\n" +
-      "Tya & Faki\n" +
-      "Jum'at, 27 November 2026\n\n" +
-      "Info lengkap mengenai acara dan lokasi dapat dilihat melalui link undangan berikut:\n{link}\n\n" +
-      "Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu.\n\n" +
-      "Wassalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
-      "Kami yang berbahagia,\nTya & Faki";
+  var MAX_NAMES_LEN = 200000;
+  var SYNC_DEBOUNCE_MS = 600;
 
-    var MAX_NAMES_LEN = 200000; // limit wajar untuk payload sync
-    var MAX_TPL_LEN = 20000;
-    var SYNC_DEBOUNCE_MS = 1500;
-    var POLL_INTERVAL_MS = 15000;
+  var namesEl=document.getElementById("names"), saveNamesBtn=document.getElementById("saveNamesBtn"),
+      copyTextDataBtn=document.getElementById("copyTextDataBtn"), forceSyncBtn=document.getElementById("forceSyncBtn"),
+      copyRoomLinkBtn=document.getElementById("copyRoomLinkBtn"), newRoomBtn=document.getElementById("newRoomBtn"),
+      roomIdInput=document.getElementById("roomIdInput"), baseEl=document.getElementById("base"),
+      tplEl=document.getElementById("tpl"), listEl=document.getElementById("list"),
+      totalEl=document.getElementById("total"), progressFill=document.getElementById("progressFill"),
+      searchInput=document.getElementById("searchInput"), themeBtn=document.getElementById("themeBtn"),
+      cloudStatus=document.getElementById("cloudStatus"), cloudStatusText=document.getElementById("cloudStatusText"),
+      lastSyncTime=document.getElementById("lastSyncTime"), toastEl=document.getElementById("toast");
 
-    var CLIENT_ID = "client_" + Math.random().toString(36).slice(2, 11);
+  var filter="all", sent={}, mqttClient=null, autoSyncDebounce=null;
+  var localUpdatedAt=0, reconnectDelay=2000, isConnected=false;
 
-    // ====== DOM ======
-    var namesEl = document.getElementById("names");
-    var saveNamesBtn = document.getElementById("saveNamesBtn");
-    var copyTextDataBtn = document.getElementById("copyTextDataBtn");
-    var forceSyncBtn = document.getElementById("forceSyncBtn");
-    var copyRoomLinkBtn = document.getElementById("copyRoomLinkBtn");
-    var roomIdInput = document.getElementById("roomIdInput");
-    var baseEl = document.getElementById("base");
-    var tplEl = document.getElementById("tpl");
-    var listEl = document.getElementById("list");
-    var totalEl = document.getElementById("total");
-    var progressFill = document.getElementById("progressFill");
-    var searchInput = document.getElementById("searchInput");
-    var themeBtn = document.getElementById("themeBtn");
-    var cloudStatus = document.getElementById("cloudStatus");
-    var cloudStatusText = document.getElementById("cloudStatusText");
-    var lastSyncTime = document.getElementById("lastSyncTime");
-    var toastEl = document.getElementById("toast");
+  function load(k,f){ try{var v=localStorage.getItem(k);return v===null?f:v;}catch(e){return f;} }
+  function save(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
+  function showToast(m){ if(!toastEl)return; toastEl.textContent=m; toastEl.classList.add("show");
+    clearTimeout(showToast._t); showToast._t=setTimeout(function(){toastEl.classList.remove("show");},2600); }
+  function sentKey(n){ return String(n||"").toLowerCase(); }
+  function formatNamesText(t){ if(!t)return ""; return t.split("\n").map(function(l){
+    var c=l.replace(/^\s*\d+[\.\)]\s*/,"").trim(); return c?c.replace(/\s+/g,"_"):"";
+  }).filter(function(l){return l.length>0;}).join("\n"); }
+  function sentSignature(o){ return Object.keys(o).sort().map(function(k){return k+"="+o[k];}).join("|"); }
+  function sanitizeRoomId(s){ if(!s)return ""; return s.toLowerCase().replace(/[^a-z0-9_-]/g,"").substring(0,40); }
+  function randomRoomId(){ return "room-"+Math.random().toString(36).slice(2,10); }
 
-    // ====== STATE ======
-    var filter = "all";
-    var sent = {};                 // { [canonicalNameLowercase]: timestamp }
-    var isCloudActive = false;
-    var docRef = null;
-    var unsubscribeFirestore = null;
-    var sseEventSource = null;
-    var autoSyncDebounce = null;
-    var pollIntervalId = null;
+  var urlParams=new URLSearchParams(location.search);
+  var initialRoom = sanitizeRoomId(urlParams.get("room"))
+                 || sanitizeRoomId(load("tf_room_id",""))
+                 || randomRoomId();
+  var currentRoomId = initialRoom;
+  save("tf_room_id", currentRoomId);
+  if(roomIdInput) roomIdInput.value = currentRoomId;
 
-    // ====== UTIL ======
-    function load(key, fallback){
-      try { var v = localStorage.getItem(key); return v === null ? fallback : v; } catch(e) { return fallback; }
-    }
-    function save(key, val){
-      try { localStorage.setItem(key, val); } catch(e){}
-    }
-    function showToast(msg){
-      if (!toastEl) return;
-      toastEl.textContent = msg;
-      toastEl.classList.add("show");
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(function(){ toastEl.classList.remove("show"); }, 3000);
-    }
+  if(namesEl) namesEl.value = formatNamesText(load("tf_names", DEFAULT_NAMES));
+  if(baseEl) baseEl.value = load("tf_base", DEFAULT_BASE);
+  if(tplEl) tplEl.value = load("tf_tpl", DEFAULT_TPL);
 
-    // Nama kanonik: dipakai untuk key `sent` (case-insensitive).
-    function sentKey(name){ return String(name || "").toLowerCase(); }
+  try{ var rs=JSON.parse(load("tf_sent","{}"))||{}; Object.keys(rs).forEach(function(k){sent[sentKey(k)]=rs[k];}); }catch(e){ sent={}; }
+  localUpdatedAt = parseInt(load("tf_updated_at","0"),10) || 0;
 
-    // Format nama: hapus nomor urut, trim, ganti spasi jadi underscore.
-    function formatNamesText(text){
-      if (!text) return "";
-      return text.split("\n").map(function(line){
-        var clean = line.replace(/^\s*\d+[\.\)]\s*/, "").trim();
-        return clean ? clean.replace(/\s+/g, "_") : "";
-      }).filter(function(line){ return line.length > 0; }).join("\n");
-    }
+  function saveSent(){ save("tf_sent", JSON.stringify(sent)); }
 
-    // Signature stabil untuk membandingkan objek `sent` tanpa terpengaruh urutan key.
-    function sentSignature(obj){
-      return Object.keys(obj).sort().map(function(k){ return k + "=" + obj[k]; }).join("|");
-    }
+  function updateSyncStatus(live,msg){
+    if(!cloudStatus)return;
+    var d=cloudStatus.querySelector(".dot-pulse");
+    if(d) d.className="dot-pulse"+(live?"":" connecting");
+    if(cloudStatusText) cloudStatusText.textContent = msg || (live?"🟢 Tersambung":"🟡 Menghubungkan...");
+    if(lastSyncTime) lastSyncTime.textContent = new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  }
 
-    // Validasi payload masuk dari cloud.
-    function isValidPayload(data){
-      if (!data || typeof data !== "object" || Array.isArray(data)) return false;
-      if (data.namesText !== undefined) {
-        if (typeof data.namesText !== "string" || data.namesText.length > MAX_NAMES_LEN) return false;
-      }
-      if (data.sent !== undefined) {
-        if (!data.sent || typeof data.sent !== "object" || Array.isArray(data.sent)) return false;
-        var keys = Object.keys(data.sent);
-        if (keys.length > 10000) return false;
-      }
-      return true;
-    }
+  function getTopic(){ return MQTT_PREFIX + currentRoomId; }
 
-    // ====== ROOM ID ======
-    function sanitizeRoomId(str){
-      if (!str) return "";
-      return str.toLowerCase().replace(/[^a-z0-9_-]/g, "").substring(0, 40);
-    }
-    function randomRoomId(){
-      return "room-" + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 8);
-    }
+  function buildPayload(){
+    return {
+      namesText: formatNamesText(namesEl?namesEl.value:""),
+      sent: sent,
+      updatedAt: Date.now(),
+      senderId: CLIENT_ID
+    };
+  }
 
-    var urlParams = new URLSearchParams(window.location.search);
-    var initialRoom = sanitizeRoomId(urlParams.get("room"))
-                   || sanitizeRoomId(load("tf_room_id", ""))
-                   || randomRoomId();
-    var currentRoomId = initialRoom;
-    save("tf_room_id", currentRoomId);
-    if (roomIdInput) roomIdInput.value = currentRoomId;
+  var CLIENT_ID = "c-"+Math.random().toString(36).slice(2,10);
 
-    // ====== MUAT DATA LOKAL ======
-    if (namesEl) namesEl.value = formatNamesText(load("tf_names", DEFAULT_NAMES));
-    if (baseEl) baseEl.value = load("tf_base", DEFAULT_BASE);
-    if (tplEl) tplEl.value = load("tf_tpl", DEFAULT_TPL);
+  function publishState(){
+    if(!mqttClient || !isConnected) return;
+    var p = buildPayload();
+    localUpdatedAt = p.updatedAt;
+    save("tf_updated_at", String(localUpdatedAt));
+    try{
+      mqttClient.publish(getTopic(), JSON.stringify(p), {qos:1, retain:true});
+    }catch(e){ console.warn("publish err", e); }
+  }
 
-    // Migrasi key `sent` lama (bisa mixed-case) ke bentuk kanonik lowercase.
-    try {
-      var rawSent = JSON.parse(load("tf_sent", "{}")) || {};
-      Object.keys(rawSent).forEach(function(k){
-        sent[sentKey(k)] = rawSent[k];
-      });
-    } catch(e) { sent = {}; }
+  function applyRemote(data, isManual){
+    if(!data || typeof data!=="object") return false;
+    // Konflik: hanya terapkan kalau lebih baru
+    var remoteTs = parseInt(data.updatedAt,10) || 0;
+    if(!isManual && remoteTs && remoteTs <= localUpdatedAt) return false;
 
-    function saveSent(){
-      save("tf_sent", JSON.stringify(sent));
-    }
+    var hasChanged = false;
 
-    // ====== STATUS SYNC ======
-    function updateSyncStatus(isLive, message){
-      if (!cloudStatus) return;
-      var dot = cloudStatus.querySelector(".dot-pulse");
-      if (dot) dot.className = "dot-pulse" + (isLive ? "" : " connecting");
-      if (cloudStatusText) cloudStatusText.textContent = message || (isLive ? "🟢 Real-time Sync Aktif" : "🟡 Menghubungkan...");
-      if (lastSyncTime) {
-        var now = new Date();
-        lastSyncTime.textContent = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-      }
-    }
-
-    // ====== TRANSPORT: ntfy.sh ======
-    var NTFY_BASE_URL = "https://ntfy.sh/";
-    function getNtfyTopic(){ return "tyafaki_invitation_sync_v4_" + currentRoomId; }
-
-    async function publishCloudSyncPayload(payload){
-      var topic = getNtfyTopic();
-      try {
-        await fetch(NTFY_BASE_URL + topic, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-      } catch(err){
-        console.warn("ntfy publish warning:", err);
-      }
-      if (isCloudActive && docRef) {
-        setDoc(docRef, payload, { merge: true }).catch(function(err){
-          console.warn("Firestore sync error:", err);
-        });
-      }
-    }
-
-    // ====== TERAPKAN PAYLOAD REMOTE ======
-    function applyRemotePayload(data, isManual){
-      if (!isValidPayload(data)) return false;
-      if (!isManual && data.senderId === CLIENT_ID) return false;
-
-      var hasChanged = false;
-
-      // Bagian 1: namesText
-      if (data.namesText !== undefined) {
-        var formattedRemote = formatNamesText(data.namesText);
-        var formattedLocal = namesEl ? namesEl.value : "";
-
-        if (formattedRemote !== formattedLocal) {
-          // Hanya overwrite kalau user sedang TIDAK fokus di textarea.
-          // Kalau user sedang mengetik, jangan ganggu.
-          if (namesEl && document.activeElement !== namesEl) {
-            namesEl.value = formattedRemote;
-            save("tf_names", formattedRemote);
-            hasChanged = true;
-          }
-        }
-      }
-
-      // Bagian 2: sent
-      if (data.sent !== undefined) {
-        // Normalisasi key jadi lowercase saat masuk
-        var incoming = {};
-        Object.keys(data.sent).forEach(function(k){
-          incoming[sentKey(k)] = data.sent[k];
-        });
-
-        if (sentSignature(sent) !== sentSignature(incoming)) {
-          sent = incoming;
-          saveSent();
+    if(typeof data.namesText === "string" && data.namesText.length < MAX_NAMES_LEN){
+      var formatted = formatNamesText(data.namesText);
+      if(formatted !== (namesEl?namesEl.value:"")){
+        if(namesEl && document.activeElement !== namesEl){
+          namesEl.value = formatted;
+          save("tf_names", formatted);
           hasChanged = true;
         }
       }
-
-      if (hasChanged || isManual) {
-        render();
-        updateSyncStatus(true, "🟢 Real-time Sync (Tersambung)");
-        return hasChanged;
-      }
-      return false;
     }
 
-    // ====== POLLING ======
-    async function pollLatestState(isManual){
-      var topic = getNtfyTopic();
-      var polled = false;
-
-      try {
-        var res = await fetch(NTFY_BASE_URL + topic + "/json?poll=1&since=12h", { cache: "no-store" });
-        if (res.ok) {
-          var text = await res.text();
-          if (text) {
-            var lines = text.trim().split("\n");
-            var latestPayload = null;
-            for (var i = lines.length - 1; i >= 0; i--) {
-              try {
-                var msg = JSON.parse(lines[i]);
-                if (msg && msg.message) {
-                  latestPayload = JSON.parse(msg.message);
-                  break;
-                }
-              } catch(e){ /* line rusak, lanjut */ }
-            }
-            if (latestPayload && applyRemotePayload(latestPayload, isManual)) {
-              polled = true;
-            }
-          }
-        }
-      } catch(e){
-        console.warn("Ntfy poll warning:", e);
-      }
-
-      if (isManual) {
-        showToast(polled ? "🔄 Data terbaru berhasil ditarik dari Cloud!" : "👍 Data sudah paling up-to-date.");
+    if(data.sent && typeof data.sent==="object" && !Array.isArray(data.sent)){
+      var inc = {};
+      Object.keys(data.sent).forEach(function(k){ inc[sentKey(k)] = data.sent[k]; });
+      if(sentSignature(sent) !== sentSignature(inc)){
+        sent = inc;
+        saveSent();
+        hasChanged = true;
       }
     }
 
-    // ====== SSE ======
-    function setupSseListener(){
-      if (sseEventSource) {
-        try { sseEventSource.close(); } catch(e){}
-        sseEventSource = null;
-      }
-      var topic = getNtfyTopic();
-      try {
-        sseEventSource = new EventSource(NTFY_BASE_URL + topic + "/sse");
-
-        sseEventSource.onopen = function(){
-          updateSyncStatus(true, "🟢 Real-time Sync (Tersambung)");
-        };
-
-        sseEventSource.onmessage = function(e){
-          try {
-            var msg = JSON.parse(e.data);
-            if (msg && msg.message) {
-              var payload = JSON.parse(msg.message);
-              if (applyRemotePayload(payload, false)) {
-                showToast("⚡ Tamu tersinkron dari perangkat lain!");
-              }
-            }
-          } catch(err){
-            console.warn("SSE parse error:", err);
-          }
-        };
-
-        sseEventSource.onerror = function(){
-          updateSyncStatus(false, "🟡 Menghubungkan ulang...");
-        };
-      } catch(e){
-        console.warn("SSE init error:", e);
-      }
+    if(remoteTs > localUpdatedAt){
+      localUpdatedAt = remoteTs;
+      save("tf_updated_at", String(localUpdatedAt));
     }
 
-    // ====== FIRESTORE (OPSIONAL) ======
-    async function initFirestoreIfAvailable(){
-      try {
-        if (typeof __firebase_config === "undefined" || !__firebase_config) return;
-        var firebaseConfig = JSON.parse(__firebase_config);
-        var appId = typeof __app_id !== "undefined" ? __app_id : "tya-faki-invitation";
+    if(hasChanged || isManual){
+      render();
+      return true;
+    }
+    return false;
+  }
 
-        // Hindari duplicate-app error saat re-init (mis. ganti room).
-        var app;
-        if (getApps().length === 0) {
-          app = initializeApp(firebaseConfig);
-        } else {
-          app = getApp();
-        }
+  function connectMqtt(){
+    try{
+      if(mqttClient){ try{mqttClient.end(true);}catch(e){} }
+      mqttClient = mqtt.connect(MQTT_URL, {
+        clientId: CLIENT_ID,
+        clean: true,
+        reconnectPeriod: reconnectDelay,
+        connectTimeout: 8000,
+        keepalive: 30
+      });
 
-        var auth = getAuth(app);
-        var db = getFirestore(app);
-
-        var userCred = null;
-        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
-          userCred = await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          userCred = await signInAnonymously(auth);
-        }
-        if (!userCred || !userCred.user) return;
-
-        if (unsubscribeFirestore) { try { unsubscribeFirestore(); } catch(e){} }
-        unsubscribeFirestore = null;
-
-        docRef = doc(db, "artifacts", appId, "public", "data", "guests", currentRoomId);
-        isCloudActive = true;
-
-        unsubscribeFirestore = onSnapshot(docRef, function(snapshot){
-          if (snapshot.exists()) {
-            applyRemotePayload(snapshot.data(), false);
-          }
-        }, function(error){
-          console.warn("Firestore snapshot listener:", error);
+      mqttClient.on("connect", function(){
+        isConnected = true;
+        reconnectDelay = 2000;
+        updateSyncStatus(true, "🟢 Real-time Sync Aktif");
+        mqttClient.subscribe(getTopic(), {qos:1}, function(err){
+          if(err) console.warn("subscribe err", err);
+          // Publish state kita (retained) supaya device lain dapat.
+          // Kalau state kita lebih tua dari remote, akan ditimpa oleh retained dari broker.
+          setTimeout(publishState, 300);
         });
-      } catch(e){
-        console.warn("Firebase optional setup fallback:", e);
-      }
-    }
-
-    // ====== ORKESTRASI SYNC ======
-    function initSyncEngine(){
-      // Bersihkan resource lama sebelum re-init
-      if (pollIntervalId) { clearInterval(pollIntervalId); pollIntervalId = null; }
-      // SSE ditutup di dalam setupSseListener()
-
-      setupSseListener();
-      pollLatestState(false);
-      initFirestoreIfAvailable();
-
-      pollIntervalId = setInterval(function(){ pollLatestState(false); }, POLL_INTERVAL_MS);
-    }
-
-    function triggerSync(namesText, updatedSent){
-      var payload = {
-        namesText: namesText,
-        sent: updatedSent || sent,
-        roomId: currentRoomId,
-        senderId: CLIENT_ID
-      };
-      publishCloudSyncPayload(payload);
-      updateSyncStatus(true, "🟢 Tersinkron Real-time");
-    }
-
-    // ====== BUILD LINK & MESSAGE ======
-    function buildLink(name){
-      var base = (baseEl ? baseEl.value.trim() : "") || DEFAULT_BASE;
-      base = base.split("?")[0];
-      var enc = encodeURIComponent(name).replace(/%20/g, "_");
-      return base + "?to=" + enc;
-    }
-
-    function buildMessage(name, link){
-      var template = tplEl ? tplEl.value : DEFAULT_TPL;
-      return template.split("{nama}").join(name).split("{link}").join(link);
-    }
-
-    // ====== CLIPBOARD ======
-    async function copyText(text, btn, label){
-      var origText = label || "Salin";
-      function done(){
-        if (btn) {
-          btn.innerHTML = "✓ Tersalin";
-          btn.classList.add("done");
-          setTimeout(function(){ btn.innerHTML = origText; btn.classList.remove("done"); }, 1800);
-        }
-      }
-      // Cara modern
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(text);
-          done();
-          return;
-        }
-      } catch(e){ /* fallback di bawah */ }
-      // Fallback: execCommand
-      try {
-        var ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.opacity = "0";
-        document.body.appendChild(ta);
-        ta.select();
-        var ok = document.execCommand("copy");
-        document.body.removeChild(ta);
-        if (ok) { done(); return; }
-      } catch(e){ /* fallback terakhir */ }
-      window.prompt("Salin teks berikut:", text);
-    }
-
-    // ====== EVENT: ROOM ID ======
-    if (roomIdInput) {
-      roomIdInput.addEventListener("change", function(){
-        var newRoom = sanitizeRoomId(roomIdInput.value) || randomRoomId();
-        currentRoomId = newRoom;
-        roomIdInput.value = newRoom;
-        save("tf_room_id", newRoom);
-        isCloudActive = false;
-        docRef = null;
-        if (unsubscribeFirestore) { try { unsubscribeFirestore(); } catch(e){} unsubscribeFirestore = null; }
-        initSyncEngine();
-        showToast("🔑 Room Sync diubah ke: " + newRoom);
-      });
-    }
-
-    if (copyRoomLinkBtn) {
-      copyRoomLinkBtn.addEventListener("click", function(){
-        var cleanUrl = window.location.href.split("?")[0].split("#")[0];
-        var roomUrl = cleanUrl + "?room=" + encodeURIComponent(currentRoomId);
-        copyText(roomUrl, copyRoomLinkBtn, "📋 Salin Link Room Sync untuk HP");
-        showToast("🔗 Link Room Sync disalin! Kirim ke HP & buka di browser HP.");
-      });
-    }
-
-    // ====== EVENT: TOMBOL UTAMA ======
-    if (forceSyncBtn) {
-      forceSyncBtn.addEventListener("click", function(){ pollLatestState(true); });
-    }
-
-    if (saveNamesBtn) {
-      saveNamesBtn.addEventListener("click", function(){
-        if (!namesEl) return;
-        var formatted = formatNamesText(namesEl.value);
-        namesEl.value = formatted;
-        save("tf_names", formatted);
-        triggerSync(formatted, sent);
-        showToast("💾 Perubahan disimpan & tersinkron ke Cloud!");
-        render();
-      });
-    }
-
-    if (copyTextDataBtn) {
-      copyTextDataBtn.addEventListener("click", function(){
-        if (!namesEl) return;
-        var formatted = formatNamesText(namesEl.value);
-        copyText(formatted, copyTextDataBtn, "📋 Salin Teks Nama");
-        showToast("📋 Seluruh nama berhasil disalin!");
-      });
-    }
-
-    // ====== EVENT: NAMES INPUT ======
-    if (namesEl) {
-      namesEl.addEventListener("input", function(){
-        save("tf_names", namesEl.value);
-        render();
-
-        clearTimeout(autoSyncDebounce);
-        autoSyncDebounce = setTimeout(function(){
-          triggerSync(formatNamesText(namesEl.value), sent);
-        }, SYNC_DEBOUNCE_MS);
       });
 
-      // Format rapi saat blur (UX: tombol Simpan bukan satu-satunya jalan).
-      namesEl.addEventListener("blur", function(){
-        var formatted = formatNamesText(namesEl.value);
-        if (formatted !== namesEl.value) {
-          namesEl.value = formatted;
-          save("tf_names", formatted);
-          triggerSync(formatted, sent);
-          render();
-        }
+      mqttClient.on("message", function(topic, buf){
+        try{
+          var data = JSON.parse(buf.toString());
+          if(data.senderId === CLIENT_ID) return; // ignore self
+          if(applyRemote(data, false)){
+            showToast("⚡ Sinkron dari perangkat lain");
+          }
+        }catch(e){ console.warn("msg parse err", e); }
       });
+
+      mqttClient.on("reconnect", function(){ updateSyncStatus(false, "🟡 Menghubungkan ulang..."); });
+      mqttClient.on("close", function(){ isConnected=false; updateSyncStatus(false, "🟡 Terputus, mencoba ulang..."); });
+      mqttClient.on("error", function(e){ console.warn("mqtt err", e); });
+    }catch(e){
+      console.warn("mqtt init err", e);
+      updateSyncStatus(false, "🔴 Gagal connect");
     }
+  }
 
-    if (baseEl) baseEl.addEventListener("input", function(){ save("tf_base", baseEl.value); render(); });
-    if (tplEl) tplEl.addEventListener("input", function(){ save("tf_tpl", tplEl.value); render(); });
-    if (searchInput) searchInput.addEventListener("input", render);
+  function buildLink(n){ var b=(baseEl?baseEl.value.trim():"")||DEFAULT_BASE; b=b.split("?")[0];
+    return b + "?to=" + encodeURIComponent(n).replace(/%20/g,"_"); }
+  function buildMessage(n,l){ var t=tplEl?tplEl.value:DEFAULT_TPL;
+    return t.split("{nama}").join(n).split("{link}").join(l); }
 
-    // ====== EVENT: TEMA ======
-    if (themeBtn) {
-      var currentTheme = load("tf_theme", "dark");
-      document.documentElement.setAttribute("data-theme", currentTheme);
-      themeBtn.addEventListener("click", function(){
-        var next = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
-        document.documentElement.setAttribute("data-theme", next);
-        save("tf_theme", next);
-      });
-    }
+  async function copyText(text, btn, label){
+    var orig = label||"Salin";
+    function done(){ if(btn){ btn.innerHTML="✓ Tersalin"; btn.classList.add("done");
+      setTimeout(function(){ btn.innerHTML=orig; btn.classList.remove("done"); },1500); } }
+    try{ if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(text); done(); return; } }catch(e){}
+    try{ var ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.select(); var ok=document.execCommand("copy"); document.body.removeChild(ta);
+      if(ok){ done(); return; } }catch(e){}
+    window.prompt("Salin:", text);
+  }
 
-    // ====== EVENT: FILTER ======
-    document.querySelectorAll(".filter .btn").forEach(function(b){
-      b.addEventListener("click", function(){
-        filter = b.getAttribute("data-f");
-        document.querySelectorAll(".filter .btn").forEach(function(x){
-          x.setAttribute("aria-pressed", x === b ? "true" : "false");
-        });
-        render();
+  // Events
+  if(roomIdInput) roomIdInput.addEventListener("change", function(){
+    var nr = sanitizeRoomId(roomIdInput.value) || randomRoomId();
+    currentRoomId = nr; roomIdInput.value = nr; save("tf_room_id", nr);
+    if(isConnected){ try{mqttClient.unsubscribe(MQTT_PREFIX + "old");}catch(e){} }
+    connectMqtt();
+    showToast("🔑 Room: " + nr);
+  });
+
+  if(copyRoomLinkBtn) copyRoomLinkBtn.addEventListener("click", function(){
+    var clean = location.href.split("?")[0].split("#")[0];
+    var url = clean + "?room=" + encodeURIComponent(currentRoomId);
+    copyText(url, copyRoomLinkBtn, "📋 Salin Link untuk HP");
+    showToast("🔗 Link disalin! Kirim ke HP & buka di browser.");
+  });
+
+  if(newRoomBtn) newRoomBtn.addEventListener("click", function(){
+    var nr = randomRoomId();
+    currentRoomId = nr; roomIdInput.value = nr; save("tf_room_id", nr);
+    connectMqtt();
+    var clean = location.href.split("?")[0].split("#")[0];
+    var url = clean + "?room=" + encodeURIComponent(currentRoomId);
+    copyText(url, newRoomBtn, "✨ Buat Room Baru");
+    showToast("✨ Room baru dibuat! Link disalin.");
+  });
+
+  if(forceSyncBtn) forceSyncBtn.addEventListener("click", function(){
+    if(!isConnected){ showToast("⚠️ Belum tersambung"); return; }
+    // Minta state terbaru dari broker (retained akan dikirim ulang saat resubscribe)
+    mqttClient.unsubscribe(getTopic(), function(){
+      mqttClient.subscribe(getTopic(), {qos:1}, function(){
+        showToast("🔄 Meminta data terbaru...");
       });
     });
+  });
 
-    // ====== RENDER ======
-    function render(){
-      if (!listEl) return;
-
-      var searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
-
-      // PENTING: pakai formatNamesText agar konsisten dgn pipeline save/load.
-      var formatted = formatNamesText(namesEl ? namesEl.value : "");
-      var rawNames = formatted ? formatted.split("\n") : [];
-
-      // Dedupe case-insensitive, pertahankan bentuk asli pertama.
-      var seen = {}, dupes = 0;
-      var names = [];
-      rawNames.forEach(function(n){
-        var k = n.toLowerCase();
-        if (seen[k]) { dupes++; return; }
-        seen[k] = true;
-        names.push(n);
-      });
-
-      // Reset container
-      listEl.innerHTML = "";
-
-      if (dupes) {
-        var dn = document.createElement("div");
-        dn.className = "hint";
-        dn.style.marginBottom = "12px";
-        dn.style.color = "var(--brass-light)";
-        dn.textContent = "ℹ️ " + dupes + " nama ganda otomatis digabungkan.";
-        listEl.appendChild(dn);
-      }
-
-      // Progress
-      var sentCount = 0;
-      names.forEach(function(n){ if (sent[sentKey(n)]) sentCount++; });
-      var totalCount = names.length;
-      var percent = totalCount > 0 ? Math.round((sentCount / totalCount) * 100) : 0;
-
-      if (totalEl) totalEl.textContent = sentCount + " dari " + totalCount + " sudah dikirim (" + percent + "%)";
-      if (progressFill) progressFill.style.width = percent + "%";
-
-      if (!names.length) {
-        var e = document.createElement("div");
-        e.className = "empty";
-        e.textContent = "Belum ada nama tamu. Tulis nama di atas lalu klik Simpan.";
-        listEl.appendChild(e);
-        return;
-      }
-
-      // Filter + search
-      var shown = names.filter(function(n){
-        var k = sentKey(n);
-        if (filter === "todo" && sent[k]) return false;
-        if (filter === "sent" && !sent[k]) return false;
-        if (searchQuery && n.toLowerCase().indexOf(searchQuery) === -1) return false;
-        return true;
-      });
-
-      if (!shown.length) {
-        var e2 = document.createElement("div");
-        e2.className = "empty";
-        e2.textContent = "Tidak ada nama tamu yang sesuai dengan pencarian/filter.";
-        listEl.appendChild(e2);
-        return;
-      }
-
-      // Bangun dalam DocumentFragment untuk meminimalkan reflow.
-      var frag = document.createDocumentFragment();
-
-      shown.forEach(function(name){
-        var key = sentKey(name);
-        var isSent = !!sent[key];
-        var link = buildLink(name);
-
-        var row = document.createElement("div");
-        row.className = "row" + (isSent ? " sent" : "");
-
-        var nm = document.createElement("div");
-        nm.className = "nm";
-        nm.textContent = name;
-
-        var tag = document.createElement("label");
-        tag.className = "sent-tag";
-        var cb = document.createElement("input");
-        cb.type = "checkbox";
-        cb.checked = isSent;
-        cb.addEventListener("change", function(){
-          if (cb.checked) sent[key] = Date.now(); else delete sent[key];
-          saveSent();
-          triggerSync(formatNamesText(namesEl ? namesEl.value : ""), sent);
-          render();
-        });
-        tag.appendChild(cb);
-        tag.appendChild(document.createTextNode(isSent ? "Sudah dikirim" : "Belum dikirim"));
-        nm.appendChild(tag);
-
-        var acts = document.createElement("div");
-        acts.className = "acts";
-
-        var copyBtn = document.createElement("button");
-        copyBtn.type = "button";
-        copyBtn.className = "btn";
-        copyBtn.innerHTML = "📋 Salin Link";
-        copyBtn.addEventListener("click", function(){ copyText(link, copyBtn, "📋 Salin Link"); });
-
-        var wa = document.createElement("a");
-        wa.className = "btn solid";
-        wa.innerHTML = "💬 Kirim WA";
-        wa.target = "_blank";
-        wa.rel = "noopener";
-        wa.href = "https://wa.me/?text=" + encodeURIComponent(buildMessage(name, link));
-        wa.addEventListener("click", function(){
-          sent[key] = Date.now();
-          saveSent();
-          triggerSync(formatNamesText(namesEl ? namesEl.value : ""), sent);
-          setTimeout(render, 400);
-        });
-
-        var delBtn = document.createElement("button");
-        delBtn.type = "button";
-        delBtn.className = "btn-trash";
-        delBtn.title = "Hapus " + name;
-        delBtn.innerHTML = '<svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>';
-        delBtn.addEventListener("click", function(){
-          if (!namesEl) return;
-          // PENTING: bandingkan di pipeline yang sama (formatted), bukan raw.
-          var currentList = formatNamesText(namesEl.value).split("\n").filter(function(x){ return x.length > 0; });
-          var updatedList = currentList.filter(function(x){ return x !== name; }).join("\n");
-          namesEl.value = updatedList;
-          delete sent[key];
-          save("tf_names", updatedList);
-          saveSent();
-          triggerSync(updatedList, sent);
-          showToast("🗑 " + name + " berhasil dihapus.");
-          render();
-        });
-
-        acts.appendChild(copyBtn);
-        acts.appendChild(wa);
-        acts.appendChild(delBtn);
-
-        var url = document.createElement("div");
-        url.className = "url";
-        url.textContent = link;
-
-        row.appendChild(nm);
-        row.appendChild(acts);
-        row.appendChild(url);
-        frag.appendChild(row);
-      });
-
-      listEl.appendChild(frag);
-    }
-
-    // ====== AUTO-POLL SAAT TAB KEMBALI AKTIF ======
-    document.addEventListener("visibilitychange", function(){
-      if (document.visibilityState === "visible") {
-        pollLatestState(true);
-      }
-    });
-
-    // ====== MULAI ======
-    initSyncEngine();
+  if(saveNamesBtn) saveNamesBtn.addEventListener("click", function(){
+    if(!namesEl) return;
+    var f = formatNamesText(namesEl.value);
+    namesEl.value = f; save("tf_names", f);
+    publishState();
+    showToast("💾 Disimpan & tersinkron!");
     render();
-  })();
+  });
+
+  if(copyTextDataBtn) copyTextDataBtn.addEventListener("click", function(){
+    if(!namesEl) return;
+    copyText(formatNamesText(namesEl.value), copyTextDataBtn, "📋 Salin Teks Nama");
+    showToast("📋 Nama disalin!");
+  });
+
+  if(namesEl){
+    namesEl.addEventListener("input", function(){
+      save("tf_names", namesEl.value);
+      render();
+      clearTimeout(autoSyncDebounce);
+      autoSyncDebounce = setTimeout(publishState, SYNC_DEBOUNCE_MS);
+    });
+    namesEl.addEventListener("blur", function(){
+      var f = formatNamesText(namesEl.value);
+      if(f !== namesEl.value){
+        namesEl.value = f; save("tf_names", f); publishState(); render();
+      }
+    });
+  }
+
+  if(baseEl) baseEl.addEventListener("input", function(){ save("tf_base", baseEl.value); render(); });
+  if(tplEl) tplEl.addEventListener("input", function(){ save("tf_tpl", tplEl.value); render(); });
+  if(searchInput) searchInput.addEventListener("input", render);
+
+  if(themeBtn){
+    var cur = load("tf_theme","dark");
+    document.documentElement.setAttribute("data-theme", cur);
+    themeBtn.addEventListener("click", function(){
+      var nx = document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";
+      document.documentElement.setAttribute("data-theme", nx); save("tf_theme", nx);
+    });
+  }
+
+  document.querySelectorAll(".filter .btn").forEach(function(b){
+    b.addEventListener("click", function(){
+      filter = b.getAttribute("data-f");
+      document.querySelectorAll(".filter .btn").forEach(function(x){
+        x.setAttribute("aria-pressed", x===b?"true":"false");
+      });
+      render();
+    });
+  });
+
+  function render(){
+    if(!listEl) return;
+    var q = searchInput ? searchInput.value.toLowerCase().trim() : "";
+    var formatted = formatNamesText(namesEl?namesEl.value:"");
+    var rawNames = formatted ? formatted.split("\n") : [];
+
+    var seen={}, dupes=0, names=[];
+    rawNames.forEach(function(n){
+      var k=n.toLowerCase(); if(seen[k]){dupes++;return;} seen[k]=true; names.push(n);
+    });
+
+    listEl.innerHTML = "";
+
+    if(dupes){
+      var dn=document.createElement("div"); dn.className="hint";
+      dn.style.marginBottom="12px"; dn.style.color="var(--brass-light)";
+      dn.textContent = "ℹ️ "+dupes+" nama ganda otomatis digabungkan.";
+      listEl.appendChild(dn);
+    }
+
+    var sc=0; names.forEach(function(n){ if(sent[sentKey(n)]) sc++; });
+    var tc=names.length, pc = tc>0 ? Math.round((sc/tc)*100) : 0;
+    if(totalEl) totalEl.textContent = sc+" dari "+tc+" sudah dikirim ("+pc+"%)";
+    if(progressFill) progressFill.style.width = pc+"%";
+
+    if(!names.length){
+      var e=document.createElement("div"); e.className="empty";
+      e.textContent="Belum ada nama tamu."; listEl.appendChild(e); return;
+    }
+
+    var shown = names.filter(function(n){
+      var k = sentKey(n);
+      if(filter==="todo" && sent[k]) return false;
+      if(filter==="sent" && !sent[k]) return false;
+      if(q && n.toLowerCase().indexOf(q)===-1) return false;
+      return true;
+    });
+
+    if(!shown.length){
+      var e2=document.createElement("div"); e2.className="empty";
+      e2.textContent="Tidak ada yang cocok dengan filter/pencarian.";
+      listEl.appendChild(e2); return;
+    }
+
+    var frag = document.createDocumentFragment();
+
+    shown.forEach(function(name){
+      var key = sentKey(name), isSent = !!sent[key], link = buildLink(name);
+
+      var row = document.createElement("div");
+      row.className = "row" + (isSent?" sent":"");
+
+      var nm = document.createElement("div"); nm.className="nm"; nm.textContent = name;
+
+      var tag = document.createElement("label"); tag.className="sent-tag";
+      var cb = document.createElement("input"); cb.type="checkbox"; cb.checked = isSent;
+      cb.addEventListener("change", function(){
+        if(cb.checked) sent[key]=Date.now(); else delete sent[key];
+        saveSent(); publishState(); render();
+      });
+      tag.appendChild(cb);
+      tag.appendChild(document.createTextNode(isSent?"Sudah dikirim":"Belum dikirim"));
+      nm.appendChild(tag);
+
+      var acts = document.createElement("div"); acts.className="acts";
+
+      var copyBtn = document.createElement("button");
+      copyBtn.type="button"; copyBtn.className="btn"; copyBtn.innerHTML="📋 Salin Link";
+      copyBtn.addEventListener("click", function(){ copyText(link, copyBtn, "📋 Salin Link"); });
+
+      var wa = document.createElement("a");
+      wa.className="btn solid"; wa.innerHTML="💬 Kirim WA";
+      wa.target="_blank"; wa.rel="noopener";
+      wa.href="https://wa.me/?text="+encodeURIComponent(buildMessage(name,link));
+      wa.addEventListener("click", function(){
+        sent[key]=Date.now(); saveSent(); publishState();
+        setTimeout(render, 400);
+      });
+
+      var delBtn = document.createElement("button");
+      delBtn.type="button"; delBtn.className="btn-trash"; delBtn.title="Hapus "+name;
+      delBtn.innerHTML='<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>';
+      delBtn.addEventListener("click", function(){
+        if(!namesEl) return;
+        var curr = formatNamesText(namesEl.value).split("\n").filter(function(x){return x.length>0;});
+        var upd = curr.filter(function(x){return x!==name;}).join("\n");
+        namesEl.value = upd; delete sent[key];
+        save("tf_names", upd); saveSent(); publishState();
+        showToast("🗑 "+name+" dihapus."); render();
+      });
+
+      acts.appendChild(copyBtn); acts.appendChild(wa); acts.appendChild(delBtn);
+
+      var url = document.createElement("div"); url.className="url"; url.textContent = link;
+
+      row.appendChild(nm); row.appendChild(acts); row.appendChild(url);
+      frag.appendChild(row);
+    });
+
+    listEl.appendChild(frag);
+  }
+
+  // Flush saat tab disembunyikan (fix iOS suspend)
+  function flushBeforeHide(){
+    if(mqttClient && isConnected){
+      var p = buildPayload();
+      localUpdatedAt = p.updatedAt;
+      save("tf_updated_at", String(localUpdatedAt));
+      try{ mqttClient.publish(getTopic(), JSON.stringify(p), {qos:1, retain:true}); }catch(e){}
+    }
+  }
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState==="hidden") flushBeforeHide();
+    else if(mqttClient && !isConnected) connectMqtt();
+  });
+  window.addEventListener("pagehide", flushBeforeHide);
+
+  // Start
+  render();
+  connectMqtt();
+})();
 </script>
 </body>
 </html>
