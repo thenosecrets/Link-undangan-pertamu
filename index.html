@@ -38,7 +38,7 @@
 
   *, *::before, *::after { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
-  
+
   body {
     background: var(--bg);
     color: var(--cream);
@@ -50,16 +50,14 @@
   }
 
   .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 64px; }
-  
+
   header { text-align: center; margin-bottom: 20px; position: relative; }
   .script { font-family: "Mrs Saint Delafield", cursive; font-size: 52px; color: var(--brass-light); line-height: 1; }
   h1 { font-family: "Fraunces", serif; font-weight: 400; font-size: 22px; margin: 4px 0 6px; letter-spacing: 0.3px; }
   header p { margin: 0; color: var(--muted); font-size: 13.5px; }
 
   .theme-btn {
-    position: absolute;
-    top: 0;
-    right: 0;
+    position: absolute; top: 0; right: 0;
     background: var(--panel);
     border: 1px solid var(--line);
     color: var(--cream);
@@ -108,20 +106,14 @@
   details[open] summary { margin-bottom: 14px; }
 
   .action-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 14px;
-    gap: 10px;
-    flex-wrap: wrap;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-top: 14px; gap: 10px; flex-wrap: wrap;
   }
 
   .status-pill {
     font-size: 13px;
     color: var(--brass-light);
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    display: flex; align-items: center; gap: 8px;
     background: rgba(169, 121, 60, 0.1);
     padding: 6px 14px;
     border-radius: 20px;
@@ -130,18 +122,13 @@
   }
 
   .dot-pulse {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
+    width: 8px; height: 8px; border-radius: 50%;
     background: var(--success);
     box-shadow: 0 0 8px var(--success);
     animation: pulse 1.8s infinite;
   }
 
-  .dot-pulse.connecting {
-    background: #f59e0b;
-    box-shadow: 0 0 8px #f59e0b;
-  }
+  .dot-pulse.connecting { background: #f59e0b; box-shadow: 0 0 8px #f59e0b; }
 
   @keyframes pulse {
     0% { opacity: 0.4; transform: scale(0.9); }
@@ -149,13 +136,7 @@
     100% { opacity: 0.4; transform: scale(0.9); }
   }
 
-  .room-box {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: 12px;
-    flex-wrap: wrap;
-  }
+  .room-box { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
 
   .room-input {
     max-width: 220px !important;
@@ -164,12 +145,7 @@
     letter-spacing: 0.5px;
   }
 
-  .sync-time {
-    font-size: 11.5px;
-    color: var(--muted);
-    margin-left: auto;
-  }
-
+  .sync-time { font-size: 11.5px; color: var(--muted); margin-left: auto; }
   .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
 
   .btn {
@@ -178,15 +154,11 @@
     color: var(--brass-light);
     border-radius: 999px;
     padding: 8px 16px;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 500;
+    font: inherit; font-size: 13px; font-weight: 500;
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-flex; align-items: center; justify-content: center;
     gap: 6px;
     transition: all 0.2s ease;
   }
@@ -202,17 +174,11 @@
     border-radius: 8px;
     padding: 6px 10px;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-flex; align-items: center; justify-content: center;
     transition: all 0.2s ease;
   }
 
-  .btn-trash:hover {
-    background: var(--danger);
-    color: #ffffff;
-    border-color: var(--danger);
-  }
+  .btn-trash:hover { background: var(--danger); color: #ffffff; border-color: var(--danger); }
 
   .count-bar { margin: 24px 0 14px; }
   .count-title { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
@@ -220,8 +186,7 @@
   .count-title span { color: var(--muted); font-size: 13px; }
 
   .progress-bg {
-    width: 100%;
-    height: 8px;
+    width: 100%; height: 8px;
     background: var(--field);
     border: 1px solid var(--line);
     border-radius: 999px;
@@ -230,14 +195,12 @@
   }
 
   .progress-fill {
-    height: 100%;
-    width: 0%;
+    height: 100%; width: 0%;
     background: var(--brass-light);
     transition: width 0.4s ease;
   }
 
   .search-box { margin-bottom: 14px; }
-
   .filter { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
   .filter .btn[aria-pressed="true"] { background: var(--brass); color: #ffffff; }
 
@@ -255,7 +218,7 @@
   .row .nm { font-family: "Fraunces", serif; font-size: 17.5px; word-break: break-word; font-weight: 500; }
   .row .url { grid-column: 1 / -1; font-size: 12.5px; color: var(--muted); word-break: break-all; font-family: monospace; }
   .row .acts { display: flex; gap: 8px; grid-row: 1; grid-column: 2; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
-  
+
   .row.sent { opacity: 0.78; }
   .row.sent .nm { color: var(--muted); text-decoration: line-through; }
 
@@ -269,8 +232,7 @@
 
   .toast {
     position: fixed;
-    bottom: 24px;
-    left: 50%;
+    bottom: 24px; left: 50%;
     transform: translateX(-50%) translateY(100px);
     background: #1e293b;
     color: #ffffff;
@@ -287,10 +249,7 @@
     max-width: 90vw;
   }
 
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
   .empty { color: var(--muted); text-align: center; padding: 28px 0; }
 
@@ -310,7 +269,6 @@
     <p>Nama otomatis diformat dengan garis bawah (<b>_</b>). Ketikan di HP langsung tersinkron ke Laptop secara otomatis.</p>
   </header>
 
-  <!-- Input Daftar Nama Tamu Block -->
   <div class="block">
     <label for="names">Daftar Nama Tamu</label>
     <textarea id="names" placeholder="Tulis nama tamu (satu per baris) contoh:&#10;Desy_Elfina&#10;Desy_Safitri&#10;FAKI&#10;Tes" spellcheck="false"></textarea>
@@ -322,7 +280,7 @@
         <span id="cloudStatusText">🟡 Menghubungkan Sync Cloud...</span>
         <span class="sync-time" id="lastSyncTime">Belum sync</span>
       </div>
-      
+
       <div class="btn-group">
         <button type="button" class="btn" id="forceSyncBtn" title="Tarik data terbaru dari Cloud">🔄 Paksa Sync</button>
         <button type="button" class="btn" id="copyTextDataBtn" title="Salin seluruh teks nama">📋 Salin Teks Nama</button>
@@ -331,17 +289,16 @@
     </div>
   </div>
 
-  <!-- Detail Pengaturan Block -->
   <div class="block">
     <details open>
       <summary>⚙️ Pengaturan Room Sync (HP ↔ Laptop) &amp; Alamat Undangan</summary>
       <div style="margin-top:14px;">
         <label for="roomIdInput">Kode Room Sync (Gunakan kode yang sama di HP &amp; Laptop)</label>
         <div class="room-box">
-          <input type="text" id="roomIdInput" class="room-input" value="tyafaki2026" spellcheck="false">
+          <input type="text" id="roomIdInput" class="room-input" spellcheck="false">
           <button type="button" class="btn" id="copyRoomLinkBtn">📋 Salin Link Room Sync untuk HP</button>
         </div>
-        <div class="hint" style="margin-bottom:18px;">📱 Buka link room ini di Browser HP Anda agar otomatis terhubung dengan Laptop.</div>
+        <div class="hint" style="margin-bottom:18px;">📱 Buka link room ini di Browser HP Anda agar otomatis terhubung dengan Laptop. 🔒 Kode room bersifat rahasia — siapa pun yang tahu kodenya bisa melihat dan mengubah daftar tamu.</div>
 
         <label for="base">Alamat Utama Undangan</label>
         <input type="text" id="base" spellcheck="false">
@@ -354,7 +311,6 @@
     </details>
   </div>
 
-  <!-- Progress Bar & Stats -->
   <div class="count-bar">
     <div class="count-title">
       <h2>Daftar Link Undangan</h2>
@@ -365,7 +321,6 @@
     </div>
   </div>
 
-  <!-- Search & Filter Controls -->
   <div class="search-box">
     <input type="text" id="searchInput" placeholder="🔍 Cari nama tamu..." spellcheck="false">
   </div>
@@ -376,34 +331,24 @@
     <button type="button" class="btn" data-f="sent" aria-pressed="false">Sudah Dikirim</button>
   </div>
 
-  <!-- Guest List Output Container -->
   <div id="list"></div>
 </div>
 
 <div id="toast" class="toast">Notifikasi</div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
   import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
   import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
   (function(){
     "use strict";
 
+    // ====== KONFIGURASI DEFAULT ======
     var DEFAULT_BASE = "https://thenosecrets.github.io/Undangan-Tya-Faki/";
     var DEFAULT_NAMES = [
-      "Desy_Elfina",
-      "Desy_Safitri",
-      "Bernika",
-      "Ela",
-      "Nanda",
-      "Teguh",
-      "Yusuf",
-      "Silvy",
-      "Susmi",
-      "Nur_Fatimah",
-      "FAKI",
-      "Tes"
+      "Desy_Elfina", "Desy_Safitri", "Bernika", "Ela", "Nanda", "Teguh",
+      "Yusuf", "Silvy", "Susmi", "Nur_Fatimah", "FAKI", "Tes"
     ].join("\n");
 
     var DEFAULT_TPL =
@@ -417,8 +362,14 @@
       "Wassalamu'alaikum Warahmatullahi Wabarakatuh\n\n" +
       "Kami yang berbahagia,\nTya & Faki";
 
-    var CLIENT_ID = "client_" + Math.random().toString(36).substr(2, 9);
+    var MAX_NAMES_LEN = 200000; // limit wajar untuk payload sync
+    var MAX_TPL_LEN = 20000;
+    var SYNC_DEBOUNCE_MS = 1500;
+    var POLL_INTERVAL_MS = 15000;
 
+    var CLIENT_ID = "client_" + Math.random().toString(36).slice(2, 11);
+
+    // ====== DOM ======
     var namesEl = document.getElementById("names");
     var saveNamesBtn = document.getElementById("saveNamesBtn");
     var copyTextDataBtn = document.getElementById("copyTextDataBtn");
@@ -437,79 +388,113 @@
     var lastSyncTime = document.getElementById("lastSyncTime");
     var toastEl = document.getElementById("toast");
 
+    // ====== STATE ======
     var filter = "all";
-    var sent = {};
+    var sent = {};                 // { [canonicalNameLowercase]: timestamp }
     var isCloudActive = false;
     var docRef = null;
     var unsubscribeFirestore = null;
     var sseEventSource = null;
     var autoSyncDebounce = null;
-    
-    var urlParams = new URLSearchParams(window.location.search);
-    var initialRoom = urlParams.get("room") || load("tf_room_id", "tyafaki2026");
-    var currentRoomId = sanitizeRoomId(initialRoom);
+    var pollIntervalId = null;
 
-    function sanitizeRoomId(str) {
-      if (!str) return "tyafaki2026";
-      return str.toLowerCase().replace(/[^a-z0-9_-]/g, "").substring(0, 40) || "tyafaki2026";
-    }
-
-    if (roomIdInput) {
-      roomIdInput.value = currentRoomId;
-      save("tf_room_id", currentRoomId);
-    }
-
-    function showToast(msg) {
-      if (!toastEl) return;
-      toastEl.textContent = msg;
-      toastEl.classList.add("show");
-      setTimeout(function(){ toastEl.classList.remove("show"); }, 3000);
-    }
-
+    // ====== UTIL ======
     function load(key, fallback){
       try { var v = localStorage.getItem(key); return v === null ? fallback : v; } catch(e) { return fallback; }
     }
     function save(key, val){
       try { localStorage.setItem(key, val); } catch(e){}
     }
-
-    function formatNamesText(text) {
-      if (!text) return "";
-      return text.split("\n").map(function(line) {
-        var clean = line.replace(/^\s*\d+[\.\)]\s*/, "").trim();
-        return clean ? clean.replace(/\s+/g, "_") : "";
-      }).filter(function(line) { return line.length > 0; }).join("\n");
+    function showToast(msg){
+      if (!toastEl) return;
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(function(){ toastEl.classList.remove("show"); }, 3000);
     }
 
+    // Nama kanonik: dipakai untuk key `sent` (case-insensitive).
+    function sentKey(name){ return String(name || "").toLowerCase(); }
+
+    // Format nama: hapus nomor urut, trim, ganti spasi jadi underscore.
+    function formatNamesText(text){
+      if (!text) return "";
+      return text.split("\n").map(function(line){
+        var clean = line.replace(/^\s*\d+[\.\)]\s*/, "").trim();
+        return clean ? clean.replace(/\s+/g, "_") : "";
+      }).filter(function(line){ return line.length > 0; }).join("\n");
+    }
+
+    // Signature stabil untuk membandingkan objek `sent` tanpa terpengaruh urutan key.
+    function sentSignature(obj){
+      return Object.keys(obj).sort().map(function(k){ return k + "=" + obj[k]; }).join("|");
+    }
+
+    // Validasi payload masuk dari cloud.
+    function isValidPayload(data){
+      if (!data || typeof data !== "object" || Array.isArray(data)) return false;
+      if (data.namesText !== undefined) {
+        if (typeof data.namesText !== "string" || data.namesText.length > MAX_NAMES_LEN) return false;
+      }
+      if (data.sent !== undefined) {
+        if (!data.sent || typeof data.sent !== "object" || Array.isArray(data.sent)) return false;
+        var keys = Object.keys(data.sent);
+        if (keys.length > 10000) return false;
+      }
+      return true;
+    }
+
+    // ====== ROOM ID ======
+    function sanitizeRoomId(str){
+      if (!str) return "";
+      return str.toLowerCase().replace(/[^a-z0-9_-]/g, "").substring(0, 40);
+    }
+    function randomRoomId(){
+      return "room-" + Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 8);
+    }
+
+    var urlParams = new URLSearchParams(window.location.search);
+    var initialRoom = sanitizeRoomId(urlParams.get("room"))
+                   || sanitizeRoomId(load("tf_room_id", ""))
+                   || randomRoomId();
+    var currentRoomId = initialRoom;
+    save("tf_room_id", currentRoomId);
+    if (roomIdInput) roomIdInput.value = currentRoomId;
+
+    // ====== MUAT DATA LOKAL ======
     if (namesEl) namesEl.value = formatNamesText(load("tf_names", DEFAULT_NAMES));
     if (baseEl) baseEl.value = load("tf_base", DEFAULT_BASE);
     if (tplEl) tplEl.value = load("tf_tpl", DEFAULT_TPL);
-    try { sent = JSON.parse(load("tf_sent", "{}")) || {}; } catch(e){ sent = {}; }
 
-    function saveSent(){ save("tf_sent", JSON.stringify(sent)); }
+    // Migrasi key `sent` lama (bisa mixed-case) ke bentuk kanonik lowercase.
+    try {
+      var rawSent = JSON.parse(load("tf_sent", "{}")) || {};
+      Object.keys(rawSent).forEach(function(k){
+        sent[sentKey(k)] = rawSent[k];
+      });
+    } catch(e) { sent = {}; }
 
-    function updateSyncStatus(isLive, message) {
+    function saveSent(){
+      save("tf_sent", JSON.stringify(sent));
+    }
+
+    // ====== STATUS SYNC ======
+    function updateSyncStatus(isLive, message){
       if (!cloudStatus) return;
       var dot = cloudStatus.querySelector(".dot-pulse");
-      if (dot) {
-        dot.className = "dot-pulse" + (isLive ? "" : " connecting");
-      }
-      if (cloudStatusText) {
-        cloudStatusText.textContent = message || (isLive ? "🟢 Real-time Sync Aktif" : "🟡 Menghubungkan...");
-      }
+      if (dot) dot.className = "dot-pulse" + (isLive ? "" : " connecting");
+      if (cloudStatusText) cloudStatusText.textContent = message || (isLive ? "🟢 Real-time Sync Aktif" : "🟡 Menghubungkan...");
       if (lastSyncTime) {
         var now = new Date();
-        lastSyncTime.textContent = now.toLocaleTimeString("id-ID", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        lastSyncTime.textContent = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
       }
     }
 
+    // ====== TRANSPORT: ntfy.sh ======
     var NTFY_BASE_URL = "https://ntfy.sh/";
+    function getNtfyTopic(){ return "tyafaki_invitation_sync_v4_" + currentRoomId; }
 
-    function getNtfyTopic() {
-      return "tyafaki_invitation_sync_v4_" + currentRoomId;
-    }
-
-    async function publishCloudSyncPayload(payload) {
+    async function publishCloudSyncPayload(payload){
       var topic = getNtfyTopic();
       try {
         await fetch(NTFY_BASE_URL + topic, {
@@ -517,10 +502,9 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-      } catch (err) {
+      } catch(err){
         console.warn("ntfy publish warning:", err);
       }
-
       if (isCloudActive && docRef) {
         setDoc(docRef, payload, { merge: true }).catch(function(err){
           console.warn("Firestore sync error:", err);
@@ -528,31 +512,39 @@
       }
     }
 
-    function applyRemotePayload(data, isManual) {
-      if (!data) return false;
-      if (data.senderId === CLIENT_ID && !isManual) return false;
+    // ====== TERAPKAN PAYLOAD REMOTE ======
+    function applyRemotePayload(data, isManual){
+      if (!isValidPayload(data)) return false;
+      if (!isManual && data.senderId === CLIENT_ID) return false;
 
       var hasChanged = false;
 
+      // Bagian 1: namesText
       if (data.namesText !== undefined) {
         var formattedRemote = formatNamesText(data.namesText);
         var formattedLocal = namesEl ? namesEl.value : "";
-        
+
         if (formattedRemote !== formattedLocal) {
+          // Hanya overwrite kalau user sedang TIDAK fokus di textarea.
+          // Kalau user sedang mengetik, jangan ganggu.
           if (namesEl && document.activeElement !== namesEl) {
             namesEl.value = formattedRemote;
+            save("tf_names", formattedRemote);
+            hasChanged = true;
           }
-          save("tf_names", formattedRemote);
-          hasChanged = true;
         }
       }
 
-      if (data.sent) {
-        var localSentStr = JSON.stringify(sent);
-        var remoteSentStr = JSON.stringify(data.sent);
-        
-        if (localSentStr !== remoteSentStr) {
-          sent = Object.assign({}, data.sent);
+      // Bagian 2: sent
+      if (data.sent !== undefined) {
+        // Normalisasi key jadi lowercase saat masuk
+        var incoming = {};
+        Object.keys(data.sent).forEach(function(k){
+          incoming[sentKey(k)] = data.sent[k];
+        });
+
+        if (sentSignature(sent) !== sentSignature(incoming)) {
+          sent = incoming;
           saveSent();
           hasChanged = true;
         }
@@ -561,12 +553,13 @@
       if (hasChanged || isManual) {
         render();
         updateSyncStatus(true, "🟢 Real-time Sync (Tersambung)");
-        return true;
+        return hasChanged;
       }
       return false;
     }
 
-    async function pollLatestState(isManual) {
+    // ====== POLLING ======
+    async function pollLatestState(isManual){
       var topic = getNtfyTopic();
       var polled = false;
 
@@ -577,50 +570,44 @@
           if (text) {
             var lines = text.trim().split("\n");
             var latestPayload = null;
-            
             for (var i = lines.length - 1; i >= 0; i--) {
               try {
                 var msg = JSON.parse(lines[i]);
                 if (msg && msg.message) {
                   latestPayload = JSON.parse(msg.message);
-                  break; 
+                  break;
                 }
-              } catch(e){}
+              } catch(e){ /* line rusak, lanjut */ }
             }
-            
-            if (latestPayload) {
-              if (applyRemotePayload(latestPayload, isManual)) {
-                polled = true;
-              }
+            if (latestPayload && applyRemotePayload(latestPayload, isManual)) {
+              polled = true;
             }
           }
         }
-      } catch(e) {
+      } catch(e){
         console.warn("Ntfy poll warning:", e);
       }
 
-      if (isManual && polled) {
-        showToast("🔄 Data terbaru berhasil ditarik dari Cloud!");
-      } else if (isManual) {
-        showToast("👍 Data sudah paling up-to-date.");
+      if (isManual) {
+        showToast(polled ? "🔄 Data terbaru berhasil ditarik dari Cloud!" : "👍 Data sudah paling up-to-date.");
       }
     }
 
-    function setupSseListener() {
+    // ====== SSE ======
+    function setupSseListener(){
       if (sseEventSource) {
-        sseEventSource.close();
+        try { sseEventSource.close(); } catch(e){}
         sseEventSource = null;
       }
-
       var topic = getNtfyTopic();
       try {
         sseEventSource = new EventSource(NTFY_BASE_URL + topic + "/sse");
-        
-        sseEventSource.onopen = function() {
+
+        sseEventSource.onopen = function(){
           updateSyncStatus(true, "🟢 Real-time Sync (Tersambung)");
         };
 
-        sseEventSource.onmessage = function(e) {
+        sseEventSource.onmessage = function(e){
           try {
             var msg = JSON.parse(e.data);
             if (msg && msg.message) {
@@ -629,85 +616,88 @@
                 showToast("⚡ Tamu tersinkron dari perangkat lain!");
               }
             }
-          } catch(err) {
+          } catch(err){
             console.warn("SSE parse error:", err);
           }
         };
 
-        sseEventSource.onerror = function() {
+        sseEventSource.onerror = function(){
           updateSyncStatus(false, "🟡 Menghubungkan ulang...");
         };
-      } catch(e) {
+      } catch(e){
         console.warn("SSE init error:", e);
       }
     }
 
-    async function initFirestoreIfAvailable() {
+    // ====== FIRESTORE (OPSIONAL) ======
+    async function initFirestoreIfAvailable(){
       try {
-        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-          var firebaseConfig = JSON.parse(__firebase_config);
-          var appId = typeof __app_id !== 'undefined' ? __app_id : 'tya-faki-invitation';
-          var app = initializeApp(firebaseConfig);
-          var auth = getAuth(app);
-          var db = getFirestore(app);
+        if (typeof __firebase_config === "undefined" || !__firebase_config) return;
+        var firebaseConfig = JSON.parse(__firebase_config);
+        var appId = typeof __app_id !== "undefined" ? __app_id : "tya-faki-invitation";
 
-          var userCred = null;
-          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-            userCred = await signInWithCustomToken(auth, __initial_auth_token);
-          } else {
-            userCred = await signInAnonymously(auth);
-          }
-
-          if (userCred && userCred.user) {
-            if (unsubscribeFirestore) unsubscribeFirestore();
-
-            docRef = doc(db, 'artifacts', appId, 'public', 'data', 'guests', currentRoomId);
-            isCloudActive = true;
-
-            unsubscribeFirestore = onSnapshot(docRef, function(snapshot) {
-              if (snapshot.exists()) {
-                applyRemotePayload(snapshot.data(), false);
-              }
-            }, function(error) {
-              console.warn("Firestore snapshot listener:", error);
-            });
-          }
+        // Hindari duplicate-app error saat re-init (mis. ganti room).
+        var app;
+        if (getApps().length === 0) {
+          app = initializeApp(firebaseConfig);
+        } else {
+          app = getApp();
         }
-      } catch(e) {
+
+        var auth = getAuth(app);
+        var db = getFirestore(app);
+
+        var userCred = null;
+        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
+          userCred = await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          userCred = await signInAnonymously(auth);
+        }
+        if (!userCred || !userCred.user) return;
+
+        if (unsubscribeFirestore) { try { unsubscribeFirestore(); } catch(e){} }
+        unsubscribeFirestore = null;
+
+        docRef = doc(db, "artifacts", appId, "public", "data", "guests", currentRoomId);
+        isCloudActive = true;
+
+        unsubscribeFirestore = onSnapshot(docRef, function(snapshot){
+          if (snapshot.exists()) {
+            applyRemotePayload(snapshot.data(), false);
+          }
+        }, function(error){
+          console.warn("Firestore snapshot listener:", error);
+        });
+      } catch(e){
         console.warn("Firebase optional setup fallback:", e);
       }
     }
 
-    function initSyncEngine() {
+    // ====== ORKESTRASI SYNC ======
+    function initSyncEngine(){
+      // Bersihkan resource lama sebelum re-init
+      if (pollIntervalId) { clearInterval(pollIntervalId); pollIntervalId = null; }
+      // SSE ditutup di dalam setupSseListener()
+
       setupSseListener();
       pollLatestState(false);
       initFirestoreIfAvailable();
 
-      setInterval(function() {
-         pollLatestState(false);
-      }, 15000);
+      pollIntervalId = setInterval(function(){ pollLatestState(false); }, POLL_INTERVAL_MS);
     }
 
-    initSyncEngine();
-
-    function triggerSync(namesText, updatedSent) {
+    function triggerSync(namesText, updatedSent){
       var payload = {
         namesText: namesText,
         sent: updatedSent || sent,
         roomId: currentRoomId,
         senderId: CLIENT_ID
       };
-
       publishCloudSyncPayload(payload);
       updateSyncStatus(true, "🟢 Tersinkron Real-time");
     }
 
-    document.addEventListener("visibilitychange", function(){
-      if (document.visibilityState === "visible") {
-        pollLatestState(true);
-      }
-    });
-
+    // ====== BUILD LINK & MESSAGE ======
     function buildLink(name){
       var base = (baseEl ? baseEl.value.trim() : "") || DEFAULT_BASE;
       base = base.split("?")[0];
@@ -720,7 +710,8 @@
       return template.split("{nama}").join(name).split("{link}").join(link);
     }
 
-    function copyText(text, btn, label){
+    // ====== CLIPBOARD ======
+    async function copyText(text, btn, label){
       var origText = label || "Salin";
       function done(){
         if (btn) {
@@ -729,22 +720,39 @@
           setTimeout(function(){ btn.innerHTML = origText; btn.classList.remove("done"); }, 1800);
         }
       }
-      var ta = document.createElement("textarea");
-      ta.value = text;
-      ta.style.position = "fixed";
-      ta.style.opacity = "0";
-      document.body.appendChild(ta);
-      ta.select();
-      try { document.execCommand("copy"); done(); } catch(e) { window.prompt("Salin teks berikut:", text); }
-      document.body.removeChild(ta);
+      // Cara modern
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+          done();
+          return;
+        }
+      } catch(e){ /* fallback di bawah */ }
+      // Fallback: execCommand
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand("copy");
+        document.body.removeChild(ta);
+        if (ok) { done(); return; }
+      } catch(e){ /* fallback terakhir */ }
+      window.prompt("Salin teks berikut:", text);
     }
 
+    // ====== EVENT: ROOM ID ======
     if (roomIdInput) {
       roomIdInput.addEventListener("change", function(){
-        var newRoom = sanitizeRoomId(roomIdInput.value);
+        var newRoom = sanitizeRoomId(roomIdInput.value) || randomRoomId();
         currentRoomId = newRoom;
         roomIdInput.value = newRoom;
         save("tf_room_id", newRoom);
+        isCloudActive = false;
+        docRef = null;
+        if (unsubscribeFirestore) { try { unsubscribeFirestore(); } catch(e){} unsubscribeFirestore = null; }
         initSyncEngine();
         showToast("🔑 Room Sync diubah ke: " + newRoom);
       });
@@ -752,17 +760,16 @@
 
     if (copyRoomLinkBtn) {
       copyRoomLinkBtn.addEventListener("click", function(){
-        var cleanUrl = window.location.href.split("?")[0];
+        var cleanUrl = window.location.href.split("?")[0].split("#")[0];
         var roomUrl = cleanUrl + "?room=" + encodeURIComponent(currentRoomId);
         copyText(roomUrl, copyRoomLinkBtn, "📋 Salin Link Room Sync untuk HP");
         showToast("🔗 Link Room Sync disalin! Kirim ke HP & buka di browser HP.");
       });
     }
 
+    // ====== EVENT: TOMBOL UTAMA ======
     if (forceSyncBtn) {
-      forceSyncBtn.addEventListener("click", function(){
-        pollLatestState(true);
-      });
+      forceSyncBtn.addEventListener("click", function(){ pollLatestState(true); });
     }
 
     if (saveNamesBtn) {
@@ -772,7 +779,6 @@
         namesEl.value = formatted;
         save("tf_names", formatted);
         triggerSync(formatted, sent);
-
         showToast("💾 Perubahan disimpan & tersinkron ke Cloud!");
         render();
       });
@@ -787,6 +793,7 @@
       });
     }
 
+    // ====== EVENT: NAMES INPUT ======
     if (namesEl) {
       namesEl.addEventListener("input", function(){
         save("tf_names", namesEl.value);
@@ -794,8 +801,19 @@
 
         clearTimeout(autoSyncDebounce);
         autoSyncDebounce = setTimeout(function(){
-          triggerSync(namesEl.value, sent);
-        }, 500);
+          triggerSync(formatNamesText(namesEl.value), sent);
+        }, SYNC_DEBOUNCE_MS);
+      });
+
+      // Format rapi saat blur (UX: tombol Simpan bukan satu-satunya jalan).
+      namesEl.addEventListener("blur", function(){
+        var formatted = formatNamesText(namesEl.value);
+        if (formatted !== namesEl.value) {
+          namesEl.value = formatted;
+          save("tf_names", formatted);
+          triggerSync(formatted, sent);
+          render();
+        }
       });
     }
 
@@ -803,6 +821,7 @@
     if (tplEl) tplEl.addEventListener("input", function(){ save("tf_tpl", tplEl.value); render(); });
     if (searchInput) searchInput.addEventListener("input", render);
 
+    // ====== EVENT: TEMA ======
     if (themeBtn) {
       var currentTheme = load("tf_theme", "dark");
       document.documentElement.setAttribute("data-theme", currentTheme);
@@ -813,6 +832,7 @@
       });
     }
 
+    // ====== EVENT: FILTER ======
     document.querySelectorAll(".filter .btn").forEach(function(b){
       b.addEventListener("click", function(){
         filter = b.getAttribute("data-f");
@@ -823,28 +843,30 @@
       });
     });
 
+    // ====== RENDER ======
     function render(){
       if (!listEl) return;
 
       var searchQuery = searchInput ? searchInput.value.toLowerCase().trim() : "";
-      var rawText = namesEl ? namesEl.value : "";
-      var rawLines = rawText.split("\n");
 
-      var names = rawLines
-        .map(function(n){ return n.trim().replace(/\s+/g, "_"); })
-        .filter(function(n){ return n.length > 0; });
+      // PENTING: pakai formatNamesText agar konsisten dgn pipeline save/load.
+      var formatted = formatNamesText(namesEl ? namesEl.value : "");
+      var rawNames = formatted ? formatted.split("\n") : [];
 
+      // Dedupe case-insensitive, pertahankan bentuk asli pertama.
       var seen = {}, dupes = 0;
-      names = names.filter(function(n){
+      var names = [];
+      rawNames.forEach(function(n){
         var k = n.toLowerCase();
-        if (seen[k]){ dupes++; return false; }
+        if (seen[k]) { dupes++; return; }
         seen[k] = true;
-        return true;
+        names.push(n);
       });
 
+      // Reset container
       listEl.innerHTML = "";
 
-      if (dupes){
+      if (dupes) {
         var dn = document.createElement("div");
         dn.className = "hint";
         dn.style.marginBottom = "12px";
@@ -853,14 +875,16 @@
         listEl.appendChild(dn);
       }
 
-      var sentCount = names.filter(function(n){ return sent[n]; }).length;
+      // Progress
+      var sentCount = 0;
+      names.forEach(function(n){ if (sent[sentKey(n)]) sentCount++; });
       var totalCount = names.length;
       var percent = totalCount > 0 ? Math.round((sentCount / totalCount) * 100) : 0;
 
       if (totalEl) totalEl.textContent = sentCount + " dari " + totalCount + " sudah dikirim (" + percent + "%)";
       if (progressFill) progressFill.style.width = percent + "%";
 
-      if (!names.length){
+      if (!names.length) {
         var e = document.createElement("div");
         e.className = "empty";
         e.textContent = "Belum ada nama tamu. Tulis nama di atas lalu klik Simpan.";
@@ -868,14 +892,16 @@
         return;
       }
 
+      // Filter + search
       var shown = names.filter(function(n){
-        if (filter === "todo" && sent[n]) return false;
-        if (filter === "sent" && !sent[n]) return false;
+        var k = sentKey(n);
+        if (filter === "todo" && sent[k]) return false;
+        if (filter === "sent" && !sent[k]) return false;
         if (searchQuery && n.toLowerCase().indexOf(searchQuery) === -1) return false;
         return true;
       });
 
-      if (!shown.length){
+      if (!shown.length) {
         var e2 = document.createElement("div");
         e2.className = "empty";
         e2.textContent = "Tidak ada nama tamu yang sesuai dengan pencarian/filter.";
@@ -883,10 +909,16 @@
         return;
       }
 
+      // Bangun dalam DocumentFragment untuk meminimalkan reflow.
+      var frag = document.createDocumentFragment();
+
       shown.forEach(function(name){
+        var key = sentKey(name);
+        var isSent = !!sent[key];
         var link = buildLink(name);
+
         var row = document.createElement("div");
-        row.className = "row" + (sent[name] ? " sent" : "");
+        row.className = "row" + (isSent ? " sent" : "");
 
         var nm = document.createElement("div");
         nm.className = "nm";
@@ -896,15 +928,15 @@
         tag.className = "sent-tag";
         var cb = document.createElement("input");
         cb.type = "checkbox";
-        cb.checked = !!sent[name];
+        cb.checked = isSent;
         cb.addEventListener("change", function(){
-          if (cb.checked) sent[name] = Date.now(); else delete sent[name];
+          if (cb.checked) sent[key] = Date.now(); else delete sent[key];
           saveSent();
-          triggerSync(namesEl ? namesEl.value : "", sent);
+          triggerSync(formatNamesText(namesEl ? namesEl.value : ""), sent);
           render();
         });
         tag.appendChild(cb);
-        tag.appendChild(document.createTextNode(sent[name] ? "Sudah dikirim" : "Belum dikirim"));
+        tag.appendChild(document.createTextNode(isSent ? "Sudah dikirim" : "Belum dikirim"));
         nm.appendChild(tag);
 
         var acts = document.createElement("div");
@@ -923,9 +955,9 @@
         wa.rel = "noopener";
         wa.href = "https://wa.me/?text=" + encodeURIComponent(buildMessage(name, link));
         wa.addEventListener("click", function(){
-          sent[name] = Date.now();
+          sent[key] = Date.now();
           saveSent();
-          triggerSync(namesEl ? namesEl.value : "", sent);
+          triggerSync(formatNamesText(namesEl ? namesEl.value : ""), sent);
           setTimeout(render, 400);
         });
 
@@ -936,10 +968,11 @@
         delBtn.innerHTML = '<svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>';
         delBtn.addEventListener("click", function(){
           if (!namesEl) return;
-          var currentNames = namesEl.value.split("\n").map(function(x){ return x.trim(); }).filter(function(x){ return x.length > 0; });
-          var updatedList = currentNames.filter(function(x){ return x !== name; }).join("\n");
+          // PENTING: bandingkan di pipeline yang sama (formatted), bukan raw.
+          var currentList = formatNamesText(namesEl.value).split("\n").filter(function(x){ return x.length > 0; });
+          var updatedList = currentList.filter(function(x){ return x !== name; }).join("\n");
           namesEl.value = updatedList;
-          delete sent[name];
+          delete sent[key];
           save("tf_names", updatedList);
           saveSent();
           triggerSync(updatedList, sent);
@@ -958,10 +991,21 @@
         row.appendChild(nm);
         row.appendChild(acts);
         row.appendChild(url);
-        listEl.appendChild(row);
+        frag.appendChild(row);
       });
+
+      listEl.appendChild(frag);
     }
 
+    // ====== AUTO-POLL SAAT TAB KEMBALI AKTIF ======
+    document.addEventListener("visibilitychange", function(){
+      if (document.visibilityState === "visible") {
+        pollLatestState(true);
+      }
+    });
+
+    // ====== MULAI ======
+    initSyncEngine();
     render();
   })();
 </script>
